@@ -2,13 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { verseOfToday, type Verse } from "@/lib/verses";
+import { loadFavorites, toggleFavorite } from "@/lib/favorites";
 
 export default function VerseCard() {
   const [verse, setVerse] = useState<Verse | null>(null);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setVerse(verseOfToday());
+    const today = verseOfToday();
+    setVerse(today);
+    setSaved(loadFavorites().some((f) => f.reference === today.reference));
   }, []);
+
+  function handleToggleFavorite() {
+    if (!verse) return;
+    const updated = toggleFavorite(verse);
+    setSaved(updated.some((f) => f.reference === verse.reference));
+  }
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-amber-900/10 bg-[#1c1712] px-8 py-10 text-[#faf8f3] shadow-lg">
@@ -20,9 +30,25 @@ export default function VerseCard() {
         aria-hidden
         className="pointer-events-none absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_50%_0%,rgba(251,191,36,0.15),transparent_60%)]"
       />
-      <p className="relative mb-3 text-xs uppercase tracking-[0.2em] text-amber-300/80">
-        Terang hari ini
-      </p>
+      <div className="relative mb-3 flex items-center justify-between">
+        <p className="text-xs uppercase tracking-[0.2em] text-amber-300/80">
+          Terang hari ini
+        </p>
+        {verse && (
+          <button
+            onClick={handleToggleFavorite}
+            aria-label={saved ? "Hapus dari favorit" : "Simpan ke favorit"}
+            className="text-amber-300/80 transition-colors hover:text-amber-200"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className={`h-5 w-5 ${saved ? "fill-amber-400" : "fill-none stroke-current stroke-2"}`}
+            >
+              <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" />
+            </svg>
+          </button>
+        )}
+      </div>
       {verse ? (
         <>
           <p className="relative font-serif text-xl leading-relaxed sm:text-2xl">

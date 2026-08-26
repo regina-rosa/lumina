@@ -63,6 +63,15 @@ export function deleteEntry(id: string): JournalEntry[] {
   return remaining;
 }
 
+export function updateEntry(id: string, reflection: string): JournalEntry[] {
+  const entries = loadEntries();
+  const index = entries.findIndex((e) => e.id === id);
+  if (index === -1) return entries;
+  entries[index] = { ...entries[index], reflection };
+  saveEntries(entries);
+  return entries;
+}
+
 export function currentStreak(entries: JournalEntry[]): number {
   if (entries.length === 0) return 0;
 
