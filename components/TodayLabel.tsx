@@ -1,0 +1,20 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+export default function TodayLabel() {
+  const [label, setLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    const formatted = new Intl.DateTimeFormat("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }).format(new Date());
+    setLabel(formatted);
+  }, []);
+
+  return (
+    <p className="text-sm text-[#1c1917]/50">{label ?? " "}</p>
+  );
+}
