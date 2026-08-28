@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { dateKey, type JournalEntry } from "@/lib/journal";
 
-const WEEKDAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+const WEEKDAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
@@ -20,7 +20,7 @@ function mondayIndex(date: Date): number {
 
 function formatKey(key: string): string {
   const [year, month, day] = key.split("-").map(Number);
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -51,7 +51,7 @@ export default function JournalCalendar({
     ...Array.from({ length: totalDays }, (_, i) => i + 1),
   ];
 
-  const monthLabel = new Intl.DateTimeFormat("id-ID", {
+  const monthLabel = new Intl.DateTimeFormat("en-US", {
     month: "long",
     year: "numeric",
   }).format(viewDate);
@@ -70,7 +70,7 @@ export default function JournalCalendar({
       <div className="mb-4 flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
-          aria-label="Bulan sebelumnya"
+          aria-label="Previous month"
           className="rounded-full px-2 py-1 text-sm text-muted hover:bg-ink/5"
         >
           ‹
@@ -78,7 +78,7 @@ export default function JournalCalendar({
         <p className="text-sm font-medium capitalize text-ink">{monthLabel}</p>
         <button
           onClick={() => changeMonth(1)}
-          aria-label="Bulan berikutnya"
+          aria-label="Next month"
           className="rounded-full px-2 py-1 text-sm text-muted hover:bg-ink/5"
         >
           ›
@@ -134,7 +134,7 @@ export default function JournalCalendar({
             </>
           ) : (
             <p className="mt-1 text-sm text-muted">
-              Belum ada renungan di tanggal ini.
+              No devotional on this date yet.
             </p>
           )}
         </div>

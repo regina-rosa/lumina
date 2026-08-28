@@ -48,7 +48,7 @@ export default function TodayJournal() {
     <div className="rounded-2xl border border-line bg-card p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-serif text-lg text-ink">
-          Renungan hari ini
+          Today's devotional
         </h2>
         <StreakBadge streak={streak} />
       </div>
@@ -59,7 +59,7 @@ export default function TodayJournal() {
             setReflection(e.target.value);
             setSavedAt(null);
           }}
-          placeholder="Apa yang Tuhan bicarakan lewat ayat hari ini?"
+          placeholder="What is God saying to you through today's verse?"
           rows={4}
           className="resize-none rounded-lg border border-line bg-paper px-4 py-3 text-sm text-ink outline-none placeholder:text-muted focus:border-accent/60"
         />
@@ -68,10 +68,10 @@ export default function TodayJournal() {
             type="submit"
             className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
-            Simpan renungan
+            Save devotional
           </button>
           {savedAt && (
-            <span className="text-xs text-muted">Tersimpan ✓</span>
+            <span className="text-xs text-muted">Saved ✓</span>
           )}
         </div>
       </form>

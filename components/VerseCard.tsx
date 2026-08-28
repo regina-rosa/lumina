@@ -32,12 +32,12 @@ export default function VerseCard() {
       />
       <div className="relative mb-3 flex items-center justify-between">
         <p className="text-xs uppercase tracking-[0.2em] text-accent/90">
-          Terang hari ini
+          Today's light
         </p>
         {verse && (
           <button
             onClick={handleToggleFavorite}
-            aria-label={saved ? "Hapus dari favorit" : "Simpan ke favorit"}
+            aria-label={saved ? "Remove from favorites" : "Save to favorites"}
             className="text-accent/90 transition-colors hover:text-accent"
           >
             <svg

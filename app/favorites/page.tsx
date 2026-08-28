@@ -11,17 +11,17 @@ export default function FavoritesPage() {
   }, []);
 
   if (favorites === null) {
-    return <p className="text-sm text-muted">Memuat favorit...</p>;
+    return <p className="text-sm text-muted">Loading favorites...</p>;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink">Ayat favoritmu</h1>
+      <h1 className="font-serif text-2xl text-ink">Your favorite verses</h1>
 
       {favorites.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-line bg-card p-8 text-center text-sm text-muted">
-          Belum ada ayat tersimpan. Tandai ayat di Beranda yang paling
-          berkesan buatmu.
+          No verses saved yet. Mark a verse on the Home page that speaks to
+          you.
         </p>
       ) : (
         <ul className="flex flex-col gap-4">
@@ -38,7 +38,7 @@ export default function FavoritesPage() {
                   onClick={() => setFavorites(removeFavorite(verse.reference))}
                   className="text-xs text-muted hover:text-red-600"
                 >
-                  Hapus
+                  Delete
                 </button>
               </div>
               <p className="font-serif text-base leading-relaxed text-ink">

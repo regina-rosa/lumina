@@ -11,7 +11,7 @@ import JournalCalendar from "@/components/JournalCalendar";
 
 function formatDateKey(key: string): string {
   const [year, month, day] = key.split("-").map(Number);
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     day: "numeric",
     month: "long",
@@ -50,7 +50,7 @@ function EntryCard({
                 onClick={save}
                 className="font-medium text-accent-strong hover:text-accent"
               >
-                Simpan
+                Save
               </button>
               <button
                 onClick={() => {
@@ -59,7 +59,7 @@ function EntryCard({
                 }}
                 className="text-muted hover:text-ink"
               >
-                Batal
+                Cancel
               </button>
             </>
           ) : (
@@ -74,7 +74,7 @@ function EntryCard({
                 onClick={() => onChange(deleteEntry(entry.id))}
                 className="text-muted hover:text-red-600"
               >
-                Hapus
+                Delete
               </button>
             </>
           )}
@@ -105,18 +105,18 @@ export default function JournalPage() {
   }, []);
 
   if (entries === null) {
-    return <p className="text-sm text-muted">Memuat jurnal...</p>;
+    return <p className="text-sm text-muted">Loading journal...</p>;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-ink">Jurnal renunganmu</h1>
+      <h1 className="font-serif text-2xl text-ink">Your devotional journal</h1>
 
       <JournalCalendar entries={entries} />
 
       {entries.length === 0 ? (
         <p className="rounded-2xl border border-dashed border-line bg-card p-8 text-center text-sm text-muted">
-          Belum ada renungan tersimpan. Tulis yang pertama di Beranda.
+          No devotionals saved yet. Write your first one on the Home page.
         </p>
       ) : (
         <ul className="flex flex-col gap-4">

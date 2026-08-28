@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Beranda" },
-  { href: "/journal", label: "Jurnal" },
-  { href: "/prayers", label: "Pokok Doa" },
-  { href: "/favorites", label: "Favorit" },
+  { href: "/", label: "Home" },
+  { href: "/journal", label: "Journal" },
+  { href: "/prayers", label: "Prayer List" },
+  { href: "/favorites", label: "Favorites" },
   { href: "/devotionals", label: "Devotionals" },
   { href: "/write", label: "Write" },
-  { href: "/settings", label: "Pengaturan" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export default function Sidebar() {
@@ -53,9 +53,9 @@ export default function Sidebar() {
         })}
       </nav>
       <p className="mt-auto px-2 text-xs leading-relaxed text-ink/40">
-        &ldquo;Firman-Mu itu pelita bagi kakiku.&rdquo;
+        &ldquo;Your word is a lamp to my feet.&rdquo;
         <br />
-        Mazmur 119:105
+        Psalm 119:105
       </p>
     </aside>
   );

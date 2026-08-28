@@ -24,28 +24,28 @@ export default function SettingsPage() {
   }
 
   if (theme === null) {
-    return <p className="text-sm text-muted">Memuat pengaturan...</p>;
+    return <p className="text-sm text-muted">Loading settings...</p>;
   }
 
   const modes: { id: Mode; label: string; hint: string }[] = [
-    { id: "light", label: "Terang", hint: "Nuansa kertas hangat" },
-    { id: "dark", label: "Gelap", hint: "Teduh untuk malam hari" },
+    { id: "light", label: "Light", hint: "Warm paper tones" },
+    { id: "dark", label: "Dark", hint: "Easy on the eyes at night" },
   ];
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="font-serif text-2xl text-ink">Pengaturan</h1>
+        <h1 className="font-serif text-2xl text-ink">Settings</h1>
         <p className="mt-1 text-sm text-muted">
-          Sesuaikan tampilan Lumina dengan seleramu.
+          Customize how Lumina looks for you.
         </p>
       </div>
 
       {/* Accent color */}
       <section className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-6">
         <div>
-          <h2 className="font-serif text-lg text-ink">Warna aksen</h2>
-          <p className="text-sm text-muted">Warna utama di seluruh aplikasi.</p>
+          <h2 className="font-serif text-lg text-ink">Accent color</h2>
+          <p className="text-sm text-muted">The primary color used throughout the app.</p>
         </div>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
           {ACCENTS.map((accent) => {
@@ -84,8 +84,8 @@ export default function SettingsPage() {
       {/* Mode */}
       <section className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-6">
         <div>
-          <h2 className="font-serif text-lg text-ink">Mode tampilan</h2>
-          <p className="text-sm text-muted">Pilih terang atau gelap.</p>
+          <h2 className="font-serif text-lg text-ink">Display mode</h2>
+          <p className="text-sm text-muted">Choose light or dark.</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {modes.map((m) => {

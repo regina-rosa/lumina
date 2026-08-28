@@ -14,10 +14,10 @@ export default function StatsOverview() {
     const entries = loadEntries();
     const prayers = loadPrayers();
     setStats([
-      { label: "Renungan", value: entries.length },
-      { label: "Hari beruntun", value: currentStreak(entries) },
-      { label: "Ayat favorit", value: loadFavorites().length },
-      { label: "Doa dijawab", value: prayers.filter((p) => p.answeredAt).length },
+      { label: "Devotionals", value: entries.length },
+      { label: "Day streak", value: currentStreak(entries) },
+      { label: "Favorite verses", value: loadFavorites().length },
+      { label: "Prayers answered", value: prayers.filter((p) => p.answeredAt).length },
     ]);
   }, []);
 
