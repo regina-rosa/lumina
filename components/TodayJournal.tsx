@@ -25,8 +25,8 @@ export default function TodayJournal() {
 
   if (entries === null) {
     return (
-      <div className="animate-pulse rounded-2xl border border-black/10 bg-white/60 p-6">
-        <div className="h-4 w-40 rounded bg-black/10" />
+      <div className="animate-pulse rounded-2xl border border-line bg-card p-6">
+        <div className="h-4 w-40 rounded bg-ink/10" />
       </div>
     );
   }
@@ -45,9 +45,9 @@ export default function TodayJournal() {
   }
 
   return (
-    <div className="rounded-2xl border border-black/10 bg-white/60 p-6">
+    <div className="rounded-2xl border border-line bg-card p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-serif text-lg text-[#1c1917]">
+        <h2 className="font-serif text-lg text-ink">
           Renungan hari ini
         </h2>
         <StreakBadge streak={streak} />
@@ -61,17 +61,17 @@ export default function TodayJournal() {
           }}
           placeholder="Apa yang Tuhan bicarakan lewat ayat hari ini?"
           rows={4}
-          className="resize-none rounded-lg border border-black/10 bg-white px-4 py-3 text-sm text-[#1c1917] outline-none placeholder:text-[#1c1917]/40 focus:border-amber-500/60"
+          className="resize-none rounded-lg border border-line bg-paper px-4 py-3 text-sm text-ink outline-none placeholder:text-muted focus:border-accent/60"
         />
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            className="rounded-full bg-[#1c1917] px-5 py-2 text-sm font-medium text-[#faf8f3] transition-colors hover:bg-[#1c1917]/85"
+            className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             Simpan renungan
           </button>
           {savedAt && (
-            <span className="text-xs text-[#1c1917]/50">Tersimpan ✓</span>
+            <span className="text-xs text-muted">Tersimpan ✓</span>
           )}
         </div>
       </form>

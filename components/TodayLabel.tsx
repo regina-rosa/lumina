@@ -15,6 +15,6 @@ export default function TodayLabel() {
   }, []);
 
   return (
-    <p className="text-sm text-[#1c1917]/50">{label ?? " "}</p>
+    <p className="text-sm text-muted">{label ?? " "}</p>
   );
 }

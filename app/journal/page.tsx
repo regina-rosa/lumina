@@ -35,22 +35,20 @@ function EntryCard({
   }
 
   return (
-    <li className="rounded-2xl border border-black/10 bg-white/60 p-5">
+    <li className="rounded-2xl border border-line bg-card p-5">
       <div className="mb-2 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-amber-700/80">
+          <p className="text-xs uppercase tracking-wide text-accent-strong">
             {entry.verseReference}
           </p>
-          <p className="text-sm text-[#1c1917]/50">
-            {formatDateKey(entry.dateKey)}
-          </p>
+          <p className="text-sm text-muted">{formatDateKey(entry.dateKey)}</p>
         </div>
         <div className="flex shrink-0 gap-3 text-xs">
           {editing ? (
             <>
               <button
                 onClick={save}
-                className="font-medium text-amber-700 hover:text-amber-900"
+                className="font-medium text-accent-strong hover:text-accent"
               >
                 Simpan
               </button>
@@ -59,7 +57,7 @@ function EntryCard({
                   setDraft(entry.reflection);
                   setEditing(false);
                 }}
-                className="text-[#1c1917]/40 hover:text-[#1c1917]"
+                className="text-muted hover:text-ink"
               >
                 Batal
               </button>
@@ -68,13 +66,13 @@ function EntryCard({
             <>
               <button
                 onClick={() => setEditing(true)}
-                className="text-[#1c1917]/40 hover:text-[#1c1917]"
+                className="text-muted hover:text-ink"
               >
                 Edit
               </button>
               <button
                 onClick={() => onChange(deleteEntry(entry.id))}
-                className="text-[#1c1917]/40 hover:text-red-600"
+                className="text-muted hover:text-red-600"
               >
                 Hapus
               </button>
@@ -88,10 +86,10 @@ function EntryCard({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           rows={4}
-          className="w-full resize-none rounded-lg border border-black/10 bg-white px-4 py-3 text-sm text-[#1c1917] outline-none focus:border-amber-500/60"
+          className="w-full resize-none rounded-lg border border-line bg-paper px-4 py-3 text-sm text-ink outline-none focus:border-accent/60"
         />
       ) : (
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#1c1917]">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink">
           {entry.reflection}
         </p>
       )}
@@ -107,17 +105,17 @@ export default function JournalPage() {
   }, []);
 
   if (entries === null) {
-    return <p className="text-sm text-[#1c1917]/50">Memuat jurnal...</p>;
+    return <p className="text-sm text-muted">Memuat jurnal...</p>;
   }
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-serif text-2xl text-[#1c1917]">Jurnal renunganmu</h1>
+      <h1 className="font-serif text-2xl text-ink">Jurnal renunganmu</h1>
 
       <JournalCalendar entries={entries} />
 
       {entries.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-black/15 bg-white/40 p-8 text-center text-sm text-[#1c1917]/50">
+        <p className="rounded-2xl border border-dashed border-line bg-card p-8 text-center text-sm text-muted">
           Belum ada renungan tersimpan. Tulis yang pertama di Beranda.
         </p>
       ) : (
