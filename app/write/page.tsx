@@ -2,13 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  COVER_COLORS,
-  getDevotional,
-  upsertDevotional,
-  type SharedDevotional,
-} from "@/lib/devotionals";
-import { buildShareUrl } from "@/lib/share";
+import { COVER_COLORS, type SharedDevotional } from "@/lib/devotionals";
 import ArticleView from "@/components/ArticleView";
 
 export default function WritePage() {
@@ -21,23 +15,28 @@ export default function WritePage() {
   const [createdAt, setCreatedAt] = useState(() => new Date().toISOString());
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load an existing devotional when editing (?id=…), and remember the author.
+  // Load an existing devotional when editing (?id=…), remember the author.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const editId = params.get("id") ?? undefined;
+    const editId = params.get("id");
     if (editId) {
-      const existing = getDevotional(editId);
-      if (existing) {
-        setId(existing.id);
-        setTitle(existing.title);
-        setAuthor(existing.author);
-        setVerseRef(existing.verseRef);
-        setBody(existing.body);
-        setCoverColor(existing.coverColor);
-        setCreatedAt(existing.createdAt);
-        return;
-      }
+      fetch(`/api/devotionals/${editId}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d) return;
+          setId(d.id);
+          setTitle(d.title);
+          setAuthor(d.author);
+          setVerseRef(d.verseRef);
+          setBody(d.body);
+          setCoverColor(d.coverColor);
+          setCreatedAt(d.createdAt);
+        })
+        .catch(() => {});
+      return;
     }
     const savedAuthor = window.localStorage.getItem("lumina.author");
     if (savedAuthor) setAuthor(savedAuthor);
@@ -48,23 +47,41 @@ export default function WritePage() {
     [title, author, verseRef, body, coverColor, createdAt]
   );
 
-  const canPublish = title.trim().length > 0 && body.trim().length > 0;
+  const canPublish =
+    title.trim().length > 0 && body.trim().length > 0 && !saving;
 
-  function handlePublish() {
+  async function handlePublish() {
     if (!canPublish) return;
-    const saved = upsertDevotional({
-      id,
-      title: title.trim(),
-      author: author.trim(),
-      verseRef: verseRef.trim(),
-      body: body.trim(),
-      coverColor,
-    });
-    setId(saved.id);
-    setCreatedAt(saved.createdAt);
-    window.localStorage.setItem("lumina.author", author.trim());
-    setShareUrl(buildShareUrl(window.location.origin, saved));
-    setCopied(false);
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/devotionals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id,
+          title: title.trim(),
+          author: author.trim(),
+          verseRef: verseRef.trim(),
+          body: body.trim(),
+          coverColor,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Failed to publish.");
+      }
+      const saved = await res.json();
+      setId(saved.id);
+      setCreatedAt(saved.createdAt);
+      window.localStorage.setItem("lumina.author", author.trim());
+      setShareUrl(`${window.location.origin}/read/${saved.id}`);
+      setCopied(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function copyLink() {
@@ -88,14 +105,11 @@ export default function WritePage() {
             {id ? "Edit devotional" : "Write a devotional"}
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Craft a reflection and share it with anyone via a link.
+            Publish it, then share your Lumina link — anyone can read it.
           </p>
         </div>
-        <Link
-          href="/devotionals"
-          className="text-sm text-muted hover:text-ink"
-        >
-          My devotionals
+        <Link href="/devotionals" className="text-sm text-muted hover:text-ink">
+          All devotionals
         </Link>
       </div>
 
@@ -154,12 +168,21 @@ export default function WritePage() {
             disabled={!canPublish}
             className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {id ? "Update & get link" : "Publish & get link"}
+            {saving
+              ? "Publishing…"
+              : id
+                ? "Update & get link"
+                : "Publish & get link"}
           </button>
-          {!canPublish && (
-            <span className="text-xs text-muted">
-              Add a title and some text first.
-            </span>
+          {error ? (
+            <span className="text-xs text-red-600">{error}</span>
+          ) : (
+            !canPublish &&
+            !saving && (
+              <span className="text-xs text-muted">
+                Add a title and some text first.
+              </span>
+            )
           )}
         </div>
       </div>
@@ -168,7 +191,7 @@ export default function WritePage() {
       {shareUrl && (
         <div className="flex flex-col gap-3 rounded-2xl border border-accent/30 bg-accent/[0.06] p-5">
           <p className="text-sm font-medium text-accent-strong">
-            Your devotional is ready to share ✨
+            Published ✨ It&apos;s now on your public devotionals page.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
@@ -195,7 +218,7 @@ export default function WritePage() {
             </div>
           </div>
           <p className="text-xs text-muted">
-            Anyone with this link can read it — no account needed.
+            Share this link, or just send people to your devotionals page.
           </p>
         </div>
       )}

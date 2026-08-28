@@ -9,6 +9,7 @@ const links = [
   { href: "/prayers", label: "Pokok Doa" },
   { href: "/favorites", label: "Favorit" },
   { href: "/devotionals", label: "Devotionals" },
+  { href: "/write", label: "Write" },
   { href: "/settings", label: "Pengaturan" },
 ];
 

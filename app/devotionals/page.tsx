@@ -1,98 +1,21 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  deleteDevotional,
-  formatDate,
-  loadDevotionals,
-  readingTime,
-  toShared,
-  type Devotional,
-} from "@/lib/devotionals";
-import { buildShareUrl } from "@/lib/share";
+import { readingTime, formatDate } from "@/lib/devotionals";
+import { listDevotionals } from "@/lib/devotionalStore";
+import DeleteDevotional from "@/components/DeleteDevotional";
 
-function DevotionalRow({
-  devotional,
-  onDelete,
-}: {
-  devotional: Devotional;
-  onDelete: (id: string) => void;
-}) {
-  const [copied, setCopied] = useState(false);
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-  async function copyLink() {
-    const url = buildShareUrl(window.location.origin, toShared(devotional));
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      setCopied(false);
-    }
-  }
-
-  return (
-    <li className="flex items-start gap-4 rounded-2xl border border-line bg-card p-5">
-      <span
-        aria-hidden
-        className="mt-1 h-10 w-10 shrink-0 rounded-lg"
-        style={{
-          background: `linear-gradient(135deg, ${devotional.coverColor}, color-mix(in srgb, ${devotional.coverColor} 30%, transparent))`,
-        }}
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-serif text-lg text-ink">
-          {devotional.title}
-        </p>
-        <p className="text-xs text-muted">
-          {formatDate(devotional.createdAt)} · {readingTime(devotional.body)} min
-          read
-          {devotional.verseRef ? ` · ${devotional.verseRef}` : ""}
-        </p>
-        <div className="mt-3 flex flex-wrap gap-3 text-xs">
-          <button
-            onClick={copyLink}
-            className="font-medium text-accent-strong hover:text-accent"
-          >
-            {copied ? "Copied ✓" : "Copy link"}
-          </button>
-          <Link
-            href={`/write?id=${devotional.id}`}
-            className="text-muted hover:text-ink"
-          >
-            Edit
-          </Link>
-          <button
-            onClick={() => onDelete(devotional.id)}
-            className="text-muted hover:text-red-600"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </li>
-  );
-}
-
-export default function DevotionalsPage() {
-  const [devotionals, setDevotionals] = useState<Devotional[] | null>(null);
-
-  useEffect(() => {
-    setDevotionals(loadDevotionals());
-  }, []);
-
-  if (devotionals === null) {
-    return <p className="text-sm text-muted">Loading…</p>;
-  }
+export default async function DevotionalsPage() {
+  const devotionals = await listDevotionals();
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-2xl text-ink">My devotionals</h1>
+          <h1 className="font-serif text-2xl text-ink">Devotionals</h1>
           <p className="mt-1 text-sm text-muted">
-            Everything you&apos;ve written, ready to share.
+            Reflections to read and share. Anyone with this page can read them.
           </p>
         </div>
         <Link
@@ -106,8 +29,7 @@ export default function DevotionalsPage() {
       {devotionals.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line bg-card p-10 text-center">
           <p className="text-sm text-muted">
-            No devotionals yet. Write your first one and share it with the
-            world.
+            No devotionals published yet. Write the first one.
           </p>
           <Link
             href="/write"
@@ -118,13 +40,51 @@ export default function DevotionalsPage() {
         </div>
       ) : (
         <ul className="flex flex-col gap-4">
-          {devotionals.map((devotional) => (
-            <DevotionalRow
-              key={devotional.id}
-              devotional={devotional}
-              onDelete={(id) => setDevotionals(deleteDevotional(id))}
-            />
-          ))}
+          {devotionals.map((devotional) => {
+            const excerpt = devotional.body
+              .replace(/\s+/g, " ")
+              .slice(0, 140)
+              .trim();
+            return (
+              <li
+                key={devotional.id}
+                className="overflow-hidden rounded-2xl border border-line bg-card"
+              >
+                <Link href={`/read/${devotional.id}`} className="flex gap-4 p-5">
+                  <span
+                    aria-hidden
+                    className="h-16 w-16 shrink-0 rounded-xl sm:h-20 sm:w-20"
+                    style={{
+                      background: `radial-gradient(120% 120% at 20% 0%, ${devotional.coverColor}, color-mix(in srgb, ${devotional.coverColor} 25%, #16120e))`,
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-serif text-lg leading-snug text-ink">
+                      {devotional.title}
+                    </p>
+                    <p className="text-xs text-muted">
+                      {devotional.author.trim() || "Anonymous"} ·{" "}
+                      {formatDate(devotional.createdAt)} ·{" "}
+                      {readingTime(devotional.body)} min read
+                    </p>
+                    <p className="mt-1.5 line-clamp-2 text-sm text-ink/70">
+                      {excerpt}
+                      {devotional.body.length > 140 ? "…" : ""}
+                    </p>
+                  </div>
+                </Link>
+                <div className="flex justify-end gap-4 border-t border-line px-5 py-2.5 text-xs">
+                  <Link
+                    href={`/write?id=${devotional.id}`}
+                    className="text-muted hover:text-ink"
+                  >
+                    Edit
+                  </Link>
+                  <DeleteDevotional id={devotional.id} />
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
