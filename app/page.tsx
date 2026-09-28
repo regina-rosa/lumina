@@ -1,4 +1,5 @@
 import VerseCard from "@/components/VerseCard";
+import TodayStory from "@/components/TodayStory";
 import TodayJournal from "@/components/TodayJournal";
 import TodayLabel from "@/components/TodayLabel";
 import Greeting from "@/components/Greeting";
@@ -13,6 +14,7 @@ export default function Home() {
       </div>
       <StatsOverview />
       <VerseCard />
+      <TodayStory />
       <TodayJournal />
     </div>
   );
