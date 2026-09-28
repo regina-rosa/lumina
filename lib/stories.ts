@@ -1,6 +1,9 @@
 // Bible stories retold in plain, conversational language. Built in, so
 // there's always something to read even on days without journaling.
-// Quotes are KJV; paraphrased passages are marked "adapted from".
+// Quotes are KJV.
+
+import { oldTestamentStories } from "@/lib/story-data/old-testament";
+import { newTestamentStories } from "@/lib/story-data/new-testament";
 
 export type Story = {
   slug: string;
@@ -11,7 +14,7 @@ export type Story = {
   body: string; // paragraphs separated by blank lines
 };
 
-export const stories: Story[] = [
+const originalStories: Story[] = [
   {
     slug: "running-from-god",
     title: "the man who ran the wrong way",
@@ -377,6 +380,88 @@ Not another thing to do.
 Just a place to sit. 🤍`,
   },
 ];
+
+const allStories = [
+  ...originalStories,
+  ...oldTestamentStories,
+  ...newTestamentStories,
+];
+
+// Reading order, roughly following the Bible's storyline.
+const SECTIONS: { title: string; slugs: string[] }[] = [
+  {
+    title: "Old Testament",
+    slugs: [
+      "in-the-beginning",
+      "where-are-you",
+      "noah-and-the-rainbow",
+      "count-the-stars",
+      "the-god-who-sees",
+      "god-will-provide",
+      "wrestling-with-god",
+      "joseph-meant-for-good",
+      "the-burning-bush",
+      "the-red-sea",
+      "manna-daily-bread",
+      "rahab-scarlet-thread",
+      "gideon-mighty-warrior",
+      "ruth-and-naomi",
+      "hannah-prays",
+      "speak-lord",
+      "david-and-goliath",
+      "thou-art-the-man",
+      "solomon-asks-for-wisdom",
+      "under-the-broom-tree",
+      "naaman-wash-and-be-clean",
+      "running-from-god",
+      "esther-for-such-a-time",
+      "job-and-the-whirlwind",
+      "the-fiery-furnace",
+      "daniel-in-the-lions-den",
+    ],
+  },
+  {
+    title: "New Testament",
+    slugs: [
+      "no-room-in-the-inn",
+      "baptism-and-temptation",
+      "water-into-wine",
+      "nicodemus-at-night",
+      "woman-at-the-well",
+      "peace-be-still",
+      "the-woman-who-touched-his-hem",
+      "five-loaves-two-fish",
+      "walking-on-water",
+      "the-good-samaritan",
+      "martha-martha",
+      "the-older-brother",
+      "zacchaeus",
+      "lazarus-come-forth",
+      "washing-feet",
+      "gethsemane-and-peter",
+      "the-cross",
+      "the-empty-tomb",
+      "do-you-love-me",
+      "pentecost",
+      "saul-becomes-paul",
+      "singing-at-midnight",
+    ],
+  },
+];
+
+function bySlug(slug: string): Story {
+  const story = allStories.find((s) => s.slug === slug);
+  if (!story) throw new Error(`Unknown story slug: ${slug}`);
+  return story;
+}
+
+export const storySections: { title: string; stories: Story[] }[] =
+  SECTIONS.map((section) => ({
+    title: section.title,
+    stories: section.slugs.map(bySlug),
+  }));
+
+export const stories: Story[] = storySections.flatMap((s) => s.stories);
 
 export function getStory(slug: string): Story | undefined {
   return stories.find((s) => s.slug === slug);
