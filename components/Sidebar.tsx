@@ -4,18 +4,45 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/stories", label: "Bible Stories" },
-  { href: "/feelings", label: "For Your Heart" },
-  { href: "/quiet", label: "Quiet Time" },
-  { href: "/memorize", label: "Memorize" },
-  { href: "/journal", label: "Journal" },
-  { href: "/prayers", label: "Prayer List" },
-  { href: "/favorites", label: "Favorites" },
-  { href: "/devotionals", label: "Devotionals" },
-  { href: "/write", label: "Write" },
-  { href: "/settings", label: "Settings" },
+const groups: { title?: string; links: { href: string; label: string }[] }[] = [
+  {
+    links: [
+      { href: "/", label: "Home" },
+      { href: "/garden", label: "My Garden 🌷" },
+    ],
+  },
+  {
+    title: "for today",
+    links: [
+      { href: "/feelings", label: "For Your Heart" },
+      { href: "/letters", label: "Open When… 💌" },
+      { href: "/quiet", label: "Quiet Time" },
+    ],
+  },
+  {
+    title: "read & grow",
+    links: [
+      { href: "/stories", label: "Bible Stories" },
+      { href: "/memorize", label: "Memorize" },
+      { href: "/favorites", label: "Favorites" },
+    ],
+  },
+  {
+    title: "make & share",
+    links: [
+      { href: "/cards", label: "Verse Cards ✨" },
+      { href: "/write", label: "Write" },
+      { href: "/devotionals", label: "Devotionals" },
+    ],
+  },
+  {
+    title: "keep",
+    links: [
+      { href: "/journal", label: "Journal" },
+      { href: "/prayers", label: "Prayer List" },
+      { href: "/settings", label: "Settings" },
+    ],
+  },
 ];
 
 function Logo() {
@@ -38,24 +65,33 @@ function Logo() {
 
 function NavLinks({ pathname }: { pathname: string }) {
   return (
-    <nav className="flex flex-col gap-1">
-      {links.map((link) => {
-        const active =
-          link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={`rounded-md px-2 py-2.5 text-base transition-colors md:py-1.5 md:text-sm ${
-              active
-                ? "bg-accent/10 font-medium text-accent-strong"
-                : "text-ink/70 hover:bg-ink/5 hover:text-ink"
-            }`}
-          >
-            {link.label}
-          </Link>
-        );
-      })}
+    <nav className="flex flex-col gap-4">
+      {groups.map((group, gi) => (
+        <div key={gi} className="flex flex-col gap-0.5">
+          {group.title && (
+            <p className="px-2 pb-1 font-hand text-lg leading-none text-accent-strong/80">
+              {group.title}
+            </p>
+          )}
+          {group.links.map((link) => {
+            const active =
+              link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rounded-md px-2 py-2 text-base transition-colors md:py-1.5 md:text-sm ${
+                  active
+                    ? "bg-accent/10 font-medium text-accent-strong"
+                    : "text-ink/70 hover:bg-ink/5 hover:text-ink"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </div>
+      ))}
     </nav>
   );
 }
@@ -91,20 +127,20 @@ export default function Sidebar() {
           </button>
         </div>
         {open && (
-          <div className="border-t border-line px-2 pb-4 pt-2">
+          <div className="max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-line px-2 pb-4 pt-3">
             <NavLinks pathname={pathname} />
           </div>
         )}
       </header>
 
       {/* Desktop: fixed sidebar */}
-      <aside className="hidden w-56 shrink-0 flex-col border-r border-line bg-paper px-4 py-6 md:flex">
+      <aside className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r border-line bg-paper px-4 py-6 md:flex">
         <div className="mb-8">
           <Logo />
         </div>
         <NavLinks pathname={pathname} />
-        <p className="mt-auto px-2 text-xs leading-relaxed text-ink/40">
-          &ldquo;Your word is a lamp to my feet.&rdquo;
+        <p className="mt-auto px-2 pt-6 text-xs leading-relaxed text-ink/40">
+          &ldquo;Your word is a lamp to my feet.&rdquo; 🤍
           <br />
           Psalm 119:105
         </p>

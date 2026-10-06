@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { verseOfToday, verses, type Verse } from "@/lib/verses";
 import { loadFavorites } from "@/lib/favorites";
 import { recordActivity } from "@/lib/activity";
+import { celebrate } from "@/lib/profile";
 
 const MEMORIZED_KEY = "lumina.memorized";
 const LEVELS = [0, 0.25, 0.5, 0.75, 1]; // share of words hidden
@@ -81,6 +82,7 @@ export default function MemorizePage() {
       window.localStorage.setItem(MEMORIZED_KEY, JSON.stringify(updated));
     } catch {}
     recordActivity("memorize");
+    celebrate();
     changeLevel(0);
   }
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { loadReadStories, setStoryRead } from "@/lib/activity";
 import { stories } from "@/lib/stories";
+import { celebrate } from "@/lib/profile";
 
 function useReadStories() {
   const [read, setRead] = useState<Record<string, string> | null>(null);
@@ -69,7 +70,10 @@ export function MarkReadButton({ slug }: { slug: string }) {
 
   return (
     <button
-      onClick={() => setRead({ ...setStoryRead(slug, !isRead) })}
+      onClick={() => {
+        setRead({ ...setStoryRead(slug, !isRead) });
+        if (!isRead) celebrate();
+      }}
       className={`self-start rounded-full px-5 py-2 text-sm font-medium transition-colors ${
         isRead
           ? "border border-accent/40 bg-accent/10 text-accent-strong"

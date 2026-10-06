@@ -9,12 +9,15 @@ import {
   type Mode,
   type ThemeState,
 } from "@/lib/theme";
+import { loadName, saveName } from "@/lib/profile";
 
 export default function SettingsPage() {
   const [theme, setTheme] = useState<ThemeState | null>(null);
+  const [name, setName] = useState("");
 
   useEffect(() => {
     setTheme(loadTheme());
+    setName(loadName());
   }, []);
 
   function update(next: ThemeState) {
@@ -44,10 +47,32 @@ export default function SettingsPage() {
       {/* Accent color */}
       <section className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-6">
         <div>
+          <h2 className="font-serif text-lg text-ink">What should Lumina call you?</h2>
+          <p className="text-sm text-muted">
+            Used in your greeting and signed on your verse cards.
+          </p>
+        </div>
+        <input
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            saveName(e.target.value);
+          }}
+          placeholder="e.g. rosie"
+          maxLength={24}
+          className="rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink outline-none placeholder:text-muted focus:border-accent/60"
+        />
+        {name.trim() && (
+          <p className="font-hand text-2xl text-accent-strong">hi, {name.trim()} 🌸</p>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-6">
+        <div>
           <h2 className="font-serif text-lg text-ink">Accent color</h2>
           <p className="text-sm text-muted">The primary color used throughout the app.</p>
         </div>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+        <div className="grid grid-cols-4 gap-3 sm:grid-cols-7">
           {ACCENTS.map((accent) => {
             const active = theme.accent === accent.id;
             return (

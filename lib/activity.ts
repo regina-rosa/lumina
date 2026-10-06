@@ -81,3 +81,40 @@ export function checkIn(feeling: string) {
   write(CHECKIN_KEY, checkIns);
   recordActivity("checkin");
 }
+
+// ---- Garden ----
+
+export type DayActivity = { kinds: ActivityKind[]; journaled: boolean };
+
+// Everything done per day, journaling included.
+export function activityByDay(): Record<string, DayActivity> {
+  const log = read<ActivityLog>(ACTIVITY_KEY, {});
+  const days: Record<string, DayActivity> = {};
+  for (const [key, kinds] of Object.entries(log)) {
+    days[key] = { kinds, journaled: false };
+  }
+  for (const entry of loadEntries()) {
+    days[entry.dateKey] = {
+      kinds: days[entry.dateKey]?.kinds ?? [],
+      journaled: true,
+    };
+  }
+  return days;
+}
+
+export function longestStreak(dates: string[]): number {
+  const sorted = [...new Set(dates)].sort();
+  let best = 0;
+  let run = 0;
+  let prev: Date | null = null;
+  for (const key of sorted) {
+    const [y, m, d] = key.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    const isNext =
+      prev !== null && Math.round((date.getTime() - prev.getTime()) / 86_400_000) === 1;
+    run = isNext ? run + 1 : 1;
+    best = Math.max(best, run);
+    prev = date;
+  }
+  return best;
+}

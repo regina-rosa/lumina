@@ -40,6 +40,9 @@
 [data-accent="emerald"] {
   --accent: #10b981;
 }
+[data-accent="blush"] {
+  --accent: #ec4899;
+}
 
 @theme inline {
   --color-paper: var(--paper);
@@ -50,6 +53,7 @@
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --font-sans: var(--font-geist-sans);
+  --font-hand: var(--font-caveat), cursive;
 }
 
 body {
@@ -94,4 +98,61 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .breathe { animation: none; transform: scale(0.85); }
+}
+
+/* ---- Petal shower ---- */
+@keyframes petal-fall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(var(--drift), 110vh) rotate(var(--spin)); opacity: 0.9; }
+}
+.petal {
+  border-radius: 80% 0 80% 0;
+  opacity: 0;
+  animation-name: petal-fall;
+  animation-timing-function: cubic-bezier(0.3, 0.2, 0.6, 1);
+  animation-fill-mode: forwards;
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Garden: blooms sway gently ---- */
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  50% { transform: rotate(2.5deg); }
+}
+.sway {
+  transform-origin: 50% 92%;
+  animation: sway 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sway { animation: none; }
+}
+
+/* ---- Open-when envelopes ---- */
+.envelope-flap {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: top;
+  transition: transform 0.6s ease;
+  z-index: 2;
+}
+.envelope {
+  perspective: 600px;
+}
+.letter-peek {
+  transition: transform 0.6s ease 0.5s;
+  z-index: 0;
+}
+.is-opening .envelope-flap {
+  transform: rotateX(180deg);
+  z-index: 0;
+}
+.is-opening .letter-peek {
+  transform: translateY(-55%);
+}
+@keyframes unfold {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.letter-unfold {
+  animation: unfold 0.45s ease-out;
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Caveat, Geist } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+import Petals from "@/components/Petals";
 
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Lumina — Bible Journal",
@@ -14,7 +16,7 @@ const themeScript = `(function(){try{var t=JSON.parse(localStorage.getItem('lumi
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
+    <html lang="en" className={`${geist.variable} ${caveat.variable} h-full antialiased`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
@@ -23,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1 bg-paper md:overflow-y-auto">
           <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">{children}</div>
         </main>
+        <Petals />
       </body>
     </html>
   );

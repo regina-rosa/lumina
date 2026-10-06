@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { recordActivity } from "@/lib/activity";
+import { celebrate } from "@/lib/profile";
 
 const DURATIONS = [1, 3, 5, 10];
 
@@ -65,6 +66,7 @@ export default function QuietTimePage() {
         setDone(true);
         recordActivity("quiet");
         chime();
+        celebrate();
       }
     };
     tick();

@@ -8,11 +8,12 @@ export type AccentOption = {
 
 export const ACCENTS: AccentOption[] = [
   { id: "amber", label: "Amber", color: "#f59e0b" },
-  { id: "orange", label: "Jingga", color: "#f97316" },
-  { id: "rose", label: "Mawar", color: "#f43f5e" },
-  { id: "violet", label: "Ungu", color: "#8b5cf6" },
-  { id: "sky", label: "Langit", color: "#0ea5e9" },
-  { id: "emerald", label: "Zamrud", color: "#10b981" },
+  { id: "orange", label: "Orange", color: "#f97316" },
+  { id: "rose", label: "Rose", color: "#f43f5e" },
+  { id: "blush", label: "Blush", color: "#ec4899" },
+  { id: "violet", label: "Violet", color: "#8b5cf6" },
+  { id: "sky", label: "Sky", color: "#0ea5e9" },
+  { id: "emerald", label: "Emerald", color: "#10b981" },
 ];
 
 export type ThemeState = {
