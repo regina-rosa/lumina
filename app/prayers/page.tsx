@@ -32,7 +32,7 @@ function PrayerCard({
         answered ? "border-accent/25 bg-accent/[0.07]" : "border-line bg-card"
       }`}
     >
-      <div className="mb-2 flex items-start justify-between gap-4">
+      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <p
             className={`font-serif text-base leading-snug text-ink ${

@@ -11,7 +11,7 @@ export default function StoriesPage() {
           {stories.length} stories from Genesis to Acts, retold in plain words.
           No journaling needed, just read.
         </p>
-        <nav className="mt-4 flex gap-2 text-sm">
+        <nav className="mt-4 flex flex-wrap gap-2 text-sm">
           {storySections.map((section) => (
             <a
               key={section.title}
@@ -39,7 +39,7 @@ export default function StoriesPage() {
                 key={story.slug}
                 className="overflow-hidden rounded-2xl border border-line bg-card"
               >
-                <Link href={`/stories/${story.slug}`} className="flex gap-4 p-5">
+                <Link href={`/stories/${story.slug}`} className="flex gap-4 p-4 sm:p-5">
                   <span
                     aria-hidden
                     className="h-16 w-16 shrink-0 rounded-xl sm:h-20 sm:w-20"

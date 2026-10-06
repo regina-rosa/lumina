@@ -21,7 +21,7 @@ export default function VerseCard() {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-accent/15 bg-[#1c1712] px-8 py-10 text-[#faf8f3] shadow-lg">
+    <div className="relative overflow-hidden rounded-2xl border border-accent/15 bg-[#1c1712] px-6 py-8 sm:px-8 sm:py-10 text-[#faf8f3] shadow-lg">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-accent/30 blur-3xl"

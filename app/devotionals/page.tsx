@@ -11,7 +11,7 @@ export default async function DevotionalsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl text-ink">Devotionals</h1>
           <p className="mt-1 text-sm text-muted">
@@ -20,7 +20,7 @@ export default async function DevotionalsPage() {
         </div>
         <Link
           href="/write"
-          className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+          className="shrink-0 rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           + Write
         </Link>
@@ -50,7 +50,7 @@ export default async function DevotionalsPage() {
                 key={devotional.id}
                 className="overflow-hidden rounded-2xl border border-line bg-card"
               >
-                <Link href={`/read/${devotional.id}`} className="flex gap-4 p-5">
+                <Link href={`/read/${devotional.id}`} className="flex gap-4 p-4 sm:p-5">
                   <span
                     aria-hidden
                     className="h-16 w-16 shrink-0 rounded-xl sm:h-20 sm:w-20"

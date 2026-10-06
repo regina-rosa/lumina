@@ -80,7 +80,7 @@ export default async function StoryPage({ params }: Props) {
         </div>
       </article>
 
-      <div className="flex items-center justify-between text-sm">
+      <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/stories"
           className="font-medium text-accent-strong hover:text-accent"
@@ -89,7 +89,7 @@ export default async function StoryPage({ params }: Props) {
         </Link>
         <Link
           href={`/stories/${next.slug}`}
-          className="font-medium text-accent-strong hover:text-accent"
+          className="rounded-2xl border border-line bg-card px-4 py-3 font-medium text-accent-strong hover:text-accent sm:border-0 sm:bg-transparent sm:p-0"
         >
           Next: {next.title} →
         </Link>

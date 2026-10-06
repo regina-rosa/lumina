@@ -99,7 +99,7 @@ export default function WritePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div>
           <h1 className="font-serif text-2xl text-ink">
             {id ? "Edit devotional" : "Write a devotional"}
@@ -114,7 +114,7 @@ export default function WritePage() {
       </div>
 
       {/* Editor */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-6">
+      <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-4 sm:p-6">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -162,7 +162,7 @@ export default function WritePage() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3 pt-1">
+        <div className="flex flex-wrap items-center gap-3 pt-1">
           <button
             onClick={handlePublish}
             disabled={!canPublish}

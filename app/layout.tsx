@@ -18,10 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="flex h-full min-h-screen">
+      <body className="flex min-h-screen flex-col md:h-full md:flex-row">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto bg-paper">
-          <div className="mx-auto max-w-3xl px-6 py-10">{children}</div>
+        <main className="flex-1 bg-paper md:overflow-y-auto">
+          <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">{children}</div>
         </main>
       </body>
     </html>

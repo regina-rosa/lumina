@@ -25,7 +25,7 @@ export default function TodayJournal() {
 
   if (entries === null) {
     return (
-      <div className="animate-pulse rounded-2xl border border-line bg-card p-6">
+      <div className="animate-pulse rounded-2xl border border-line bg-card p-5 sm:p-6">
         <div className="h-4 w-40 rounded bg-ink/10" />
       </div>
     );
@@ -45,8 +45,8 @@ export default function TodayJournal() {
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-card p-6">
-      <div className="mb-4 flex items-center justify-between">
+    <div className="rounded-2xl border border-line bg-card p-5 sm:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-serif text-lg text-ink">
           Today's devotional
         </h2>
