@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { currentStreak, loadEntries } from "@/lib/journal";
-import { loadFavorites } from "@/lib/favorites";
+import { loadEntries } from "@/lib/journal";
+import { dailyStreak, loadReadStories } from "@/lib/activity";
 import { loadPrayers } from "@/lib/prayers";
 
 type Stat = { label: string; value: number };
@@ -14,9 +14,9 @@ export default function StatsOverview() {
     const entries = loadEntries();
     const prayers = loadPrayers();
     setStats([
-      { label: "Devotionals", value: entries.length },
-      { label: "Day streak", value: currentStreak(entries) },
-      { label: "Favorite verses", value: loadFavorites().length },
+      { label: "Day streak", value: dailyStreak() },
+      { label: "Stories read", value: Object.keys(loadReadStories()).length },
+      { label: "Journal entries", value: entries.length },
       { label: "Prayers answered", value: prayers.filter((p) => p.answeredAt).length },
     ]);
   }, []);

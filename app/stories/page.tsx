@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { readingTime } from "@/lib/devotionals";
 import { stories, storySections } from "@/lib/stories";
+import { ReadMark, StoriesProgress } from "@/components/StoryProgress";
 
 export default function StoriesPage() {
   return (
@@ -23,6 +24,8 @@ export default function StoriesPage() {
           ))}
         </nav>
       </div>
+
+      <StoriesProgress />
 
       {storySections.map((section) => (
         <section
@@ -53,6 +56,7 @@ export default function StoriesPage() {
                     </p>
                     <p className="text-xs text-muted">
                       {story.verseRef} · {readingTime(story.body)} min read
+                      <ReadMark slug={story.slug} />
                     </p>
                     <p className="mt-1.5 line-clamp-2 text-sm text-ink/70">
                       {story.summary}

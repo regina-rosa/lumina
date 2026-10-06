@@ -73,9 +73,13 @@ export function updateEntry(id: string, reflection: string): JournalEntry[] {
 }
 
 export function currentStreak(entries: JournalEntry[]): number {
-  if (entries.length === 0) return 0;
+  return streakFromDates(new Set(entries.map((e) => e.dateKey)));
+}
 
-  const dates = new Set(entries.map((e) => e.dateKey));
+// Consecutive days ending today (or yesterday, so the streak survives
+// until the day is over).
+export function streakFromDates(dates: Set<string>): number {
+  if (dates.size === 0) return 0;
   const cursor = new Date();
 
   if (!dates.has(dateKey(cursor))) {

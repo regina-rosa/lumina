@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readingTime } from "@/lib/devotionals";
 import { getStory, stories } from "@/lib/stories";
+import { MarkReadButton } from "@/components/StoryProgress";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -76,6 +77,10 @@ export default async function StoryPage({ params }: Props) {
                 </p>
               ),
             )}
+          </div>
+
+          <div className="mt-8 flex border-t border-line pt-6">
+            <MarkReadButton slug={story.slug} />
           </div>
         </div>
       </article>
