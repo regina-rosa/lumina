@@ -13,6 +13,7 @@ const KIND_LABELS: Record<string, string> = {
   story: "read a Bible story 📖",
   quiet: "had quiet time 🕯️",
   memorize: "memorized a verse 🌱",
+  quiz: "played a Bible quiz 🧩",
 };
 
 type Plot = { key: string; date: Date; day?: DayActivity; isToday: boolean };

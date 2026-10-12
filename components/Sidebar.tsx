@@ -23,6 +23,7 @@ const groups: { title?: string; links: { href: string; label: string }[] }[] = [
     title: "read & grow",
     links: [
       { href: "/stories", label: "Bible Stories" },
+      { href: "/quiz", label: "Bible Quiz 🧩" },
       { href: "/memorize", label: "Memorize" },
       { href: "/favorites", label: "Favorites" },
     ],

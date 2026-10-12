@@ -2,7 +2,7 @@ import { dateKey, loadEntries, streakFromDates } from "./journal";
 
 // Small daily things that count toward the streak, so a day without
 // journaling still counts if you read, checked in, prayed, or practiced.
-export type ActivityKind = "story" | "checkin" | "quiet" | "memorize";
+export type ActivityKind = "story" | "checkin" | "quiet" | "memorize" | "quiz";
 
 type ActivityLog = Record<string, ActivityKind[]>; // dateKey -> kinds
 
