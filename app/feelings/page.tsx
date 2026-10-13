@@ -1,55 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { feelings, getFeeling, type Feeling } from "@/lib/feelings";
-import { checkIn, loadCheckIns, type CheckIn } from "@/lib/activity";
-import { loadFavorites, toggleFavorite } from "@/lib/favorites";
-import { dateKey } from "@/lib/journal";
+import ShareButton from "@/components/ShareButton";
 
-function lastSevenDays(): { key: string; label: string }[] {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return {
-      key: dateKey(d),
-      label: new Intl.DateTimeFormat("en-US", { weekday: "narrow" }).format(d),
-    };
-  });
+function cardLink(reference: string, text: string) {
+  return `/cards?${new URLSearchParams({ ref: reference, text })}`;
 }
 
 export default function FeelingsPage() {
   const [selected, setSelected] = useState<Feeling | null>(null);
-  const [checkIns, setCheckIns] = useState<Record<string, CheckIn>>({});
-  const [saved, setSaved] = useState<Set<string>>(new Set());
-  // Built after mount so the prerendered page doesn't bake in a build-time date.
-  const [days, setDays] = useState<{ key: string; label: string }[]>([]);
 
   useEffect(() => {
-    const all = loadCheckIns();
-    setCheckIns(all);
-    setDays(lastSevenDays());
-    setSaved(new Set(loadFavorites().map((f) => f.reference)));
-    // Open a feeling from the home page link (?f=tired), else today's check-in.
-    const fromUrl = new URLSearchParams(window.location.search).get("f");
-    const initial = getFeeling(fromUrl ?? all[dateKey(new Date())]?.feeling ?? "");
-    if (initial) {
-      setSelected(initial);
-      if (fromUrl) {
-        checkIn(initial.id);
-        setCheckIns(loadCheckIns());
-      }
-    }
+    // Open a feeling straight from a link, e.g. /feelings?f=tired
+    const fromUrl = getFeeling(new URLSearchParams(window.location.search).get("f") ?? "");
+    if (fromUrl) setSelected(fromUrl);
   }, []);
 
   function choose(feeling: Feeling) {
     setSelected(feeling);
-    checkIn(feeling.id);
-    setCheckIns(loadCheckIns());
-  }
-
-  function handleSave(reference: string, text: string) {
-    const updated = toggleFavorite({ reference, text });
-    setSaved(new Set(updated.map((f) => f.reference)));
+    window.history.replaceState(null, "", `/feelings?f=${feeling.id}`);
   }
 
   return (
@@ -89,53 +60,33 @@ export default function FeelingsPage() {
             {selected.note}
           </p>
           <ul className="flex flex-col gap-3">
-            {selected.verses.map((verse) => {
-              const isSaved = saved.has(verse.reference);
-              return (
-                <li
-                  key={verse.reference}
-                  className="rounded-2xl border border-line bg-card p-5"
-                >
-                  <p className="font-serif text-lg leading-relaxed text-ink/90">
-                    &ldquo;{verse.text}&rdquo;
-                  </p>
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <p className="text-sm text-accent-strong">{verse.reference}</p>
-                    <button
-                      onClick={() => handleSave(verse.reference, verse.text)}
-                      className="text-xs font-medium text-muted hover:text-ink"
-                    >
-                      {isSaved ? "★ Saved" : "☆ Save"}
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
+            {selected.verses.map((verse) => (
+              <li key={verse.reference} className="rounded-2xl border border-line bg-card p-5">
+                <p className="font-serif text-lg leading-relaxed text-ink/90">
+                  &ldquo;{verse.text}&rdquo;
+                </p>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-sm text-accent-strong">{verse.reference}</p>
+                  <Link
+                    href={cardLink(verse.reference, verse.text)}
+                    className="text-xs font-medium text-muted hover:text-ink"
+                  >
+                    Make a card ✨
+                  </Link>
+                </div>
+              </li>
+            ))}
           </ul>
+          <div className="flex justify-center">
+            <ShareButton
+              title={`Verses for when you feel ${selected.label.toLowerCase()}`}
+              text={`For anyone feeling ${selected.label.toLowerCase()} today ${selected.emoji}`}
+              path={`/feelings?f=${selected.id}`}
+              label="Send to a friend"
+            />
+          </div>
         </section>
       )}
-
-      <section className="rounded-2xl border border-line bg-card p-5">
-        <h2 className="text-xs uppercase tracking-[0.2em] text-muted">
-          Your last 7 days
-        </h2>
-        <div className="mt-3 grid grid-cols-7 gap-1 text-center">
-          {days.map((day) => {
-            const feeling = getFeeling(checkIns[day.key]?.feeling ?? "");
-            return (
-              <div key={day.key} className="flex flex-col items-center gap-1">
-                <span
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-ink/[0.04] text-lg"
-                  title={feeling?.label}
-                >
-                  {feeling ? feeling.emoji : ""}
-                </span>
-                <span className="text-[11px] text-muted">{day.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </section>
     </div>
   );
 }

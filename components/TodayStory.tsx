@@ -3,20 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { readingTime } from "@/lib/devotionals";
-import { stories, storyOfToday, type Story } from "@/lib/stories";
-import { loadReadStories } from "@/lib/activity";
+import { storyOfToday, type Story } from "@/lib/stories";
 
 export default function TodayStory() {
   const [story, setStory] = useState<Story | null>(null);
-  const [upNext, setUpNext] = useState(false);
 
   useEffect(() => {
-    // Once today's story is read, suggest the next unread one instead.
-    const read = loadReadStories();
-    const today = storyOfToday();
-    const next = read[today.slug] ? stories.find((s) => !read[s.slug]) : undefined;
-    setStory(next ?? today);
-    setUpNext(Boolean(next));
+    setStory(storyOfToday());
   }, []);
 
   if (!story) {
@@ -37,7 +30,7 @@ export default function TodayStory() {
       />
       <div className="min-w-0 flex-1">
         <p className="text-xs uppercase tracking-[0.2em] text-accent-strong">
-          {upNext ? "Up next for you" : "Today\u2019s story"}
+          Today&apos;s story
         </p>
         <p className="mt-1 font-serif text-lg leading-snug text-ink">
           {story.title}

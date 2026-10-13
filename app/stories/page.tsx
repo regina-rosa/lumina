@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { readingTime } from "@/lib/devotionals";
 import { stories, storySections } from "@/lib/stories";
-import { ReadMark, StoriesProgress } from "@/components/StoryProgress";
 
 export default function StoriesPage() {
   return (
@@ -10,7 +9,7 @@ export default function StoriesPage() {
         <h1 className="font-serif text-2xl text-ink">Bible Stories</h1>
         <p className="mt-1 text-sm text-muted">
           {stories.length} stories from Genesis to Acts, retold in plain words.
-          No journaling needed, just read.
+          Short enough for a coffee break ☕
         </p>
         <nav className="mt-4 flex flex-wrap gap-2 text-sm">
           {storySections.map((section) => (
@@ -24,8 +23,6 @@ export default function StoriesPage() {
           ))}
         </nav>
       </div>
-
-      <StoriesProgress />
 
       {storySections.map((section) => (
         <section
@@ -56,7 +53,6 @@ export default function StoriesPage() {
                     </p>
                     <p className="text-xs text-muted">
                       {story.verseRef} · {readingTime(story.body)} min read
-                      <ReadMark slug={story.slug} />
                     </p>
                     <p className="mt-1.5 line-clamp-2 text-sm text-ink/70">
                       {story.summary}

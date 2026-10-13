@@ -1,5 +1,5 @@
 // Bible stories retold in plain, conversational language. Built in, so
-// there's always something to read even on days without journaling.
+// there's always something new to read.
 // Quotes are KJV.
 
 import { oldTestamentStories } from "@/lib/story-data/old-testament";

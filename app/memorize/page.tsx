@@ -2,20 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { verseOfToday, verses, type Verse } from "@/lib/verses";
-import { loadFavorites } from "@/lib/favorites";
-import { recordActivity } from "@/lib/activity";
 import { celebrate } from "@/lib/profile";
 
-const MEMORIZED_KEY = "lumina.memorized";
 const LEVELS = [0, 0.25, 0.5, 0.75, 1]; // share of words hidden
-
-function loadMemorized(): string[] {
-  try {
-    return JSON.parse(window.localStorage.getItem(MEMORIZED_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
 
 // A fixed but scattered order, so each level hides the previous level's
 // words plus a few more instead of reshuffling.
@@ -37,20 +26,17 @@ export default function MemorizePage() {
   const [verse, setVerse] = useState<Verse | null>(null);
   const [level, setLevel] = useState(0);
   const [peeked, setPeeked] = useState<Set<number>>(new Set());
-  const [memorized, setMemorized] = useState<string[]>([]);
 
   useEffect(() => {
     const today = verseOfToday();
-    const favorites = loadFavorites();
     const seen = new Set<string>();
-    const list = [today, ...favorites, ...verses].filter((v) => {
+    const list = [today, ...verses].filter((v) => {
       if (seen.has(v.reference)) return false;
       seen.add(v.reference);
       return true;
     });
     setChoices(list);
     setVerse(today);
-    setMemorized(loadMemorized());
   }, []);
 
   const words = useMemo(() => verse?.text.split(/\s+/) ?? [], [verse]);
@@ -74,20 +60,11 @@ export default function MemorizePage() {
 
   function finish() {
     if (!verse) return;
-    const updated = memorized.includes(verse.reference)
-      ? memorized
-      : [...memorized, verse.reference];
-    setMemorized(updated);
-    try {
-      window.localStorage.setItem(MEMORIZED_KEY, JSON.stringify(updated));
-    } catch {}
-    recordActivity("memorize");
     celebrate();
     changeLevel(0);
   }
 
   const isLast = level === LEVELS.length - 1;
-  const isMemorized = verse ? memorized.includes(verse.reference) : false;
 
   return (
     <div className="flex flex-col gap-6">
@@ -95,7 +72,6 @@ export default function MemorizePage() {
         <h1 className="font-serif text-2xl text-ink">Memorize a verse</h1>
         <p className="mt-1 text-sm text-muted">
           Read it out loud. Each step hides more words. Tap a blank to peek.
-          {memorized.length > 0 && ` You've memorized ${memorized.length} so far 🌱`}
         </p>
       </div>
 
@@ -107,7 +83,6 @@ export default function MemorizePage() {
         {choices.map((v, i) => (
           <option key={v.reference} value={v.reference}>
             {i === 0 ? `Today: ${v.reference}` : v.reference}
-            {memorized.includes(v.reference) ? " ✓" : ""}
           </option>
         ))}
       </select>
@@ -147,7 +122,6 @@ export default function MemorizePage() {
           </p>
           <p className="mt-4 text-sm text-accent-strong">
             {verse.reference}
-            {isMemorized && <span className="ml-2 text-muted">✓ memorized</span>}
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">

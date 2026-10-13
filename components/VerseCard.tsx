@@ -1,24 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { verseOfToday, type Verse } from "@/lib/verses";
-import { loadFavorites, toggleFavorite } from "@/lib/favorites";
 
 export default function VerseCard() {
   const [verse, setVerse] = useState<Verse | null>(null);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const today = verseOfToday();
-    setVerse(today);
-    setSaved(loadFavorites().some((f) => f.reference === today.reference));
+    setVerse(verseOfToday());
   }, []);
 
-  function handleToggleFavorite() {
-    if (!verse) return;
-    const updated = toggleFavorite(verse);
-    setSaved(updated.some((f) => f.reference === verse.reference));
-  }
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-accent/15 bg-[#1c1712] px-6 py-8 sm:px-8 sm:py-10 text-[#faf8f3] shadow-lg">
@@ -35,18 +27,12 @@ export default function VerseCard() {
           Today's light
         </p>
         {verse && (
-          <button
-            onClick={handleToggleFavorite}
-            aria-label={saved ? "Remove from favorites" : "Save to favorites"}
-            className="text-accent/90 transition-colors hover:text-accent"
+          <Link
+            href="/cards"
+            className="rounded-full bg-white/10 px-3 py-1 text-xs text-accent/90 transition-colors hover:bg-white/15 hover:text-accent"
           >
-            <svg
-              viewBox="0 0 24 24"
-              className={`h-5 w-5 ${saved ? "fill-accent" : "fill-none stroke-current stroke-2"}`}
-            >
-              <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" />
-            </svg>
-          </button>
+            Make a card ✨
+          </Link>
         )}
       </div>
       {verse ? (

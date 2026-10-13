@@ -6,10 +6,7 @@ import { usePathname } from "next/navigation";
 
 const groups: { title?: string; links: { href: string; label: string }[] }[] = [
   {
-    links: [
-      { href: "/", label: "Home" },
-      { href: "/garden", label: "My Garden 🌷" },
-    ],
+    links: [{ href: "/", label: "Home" }],
   },
   {
     title: "for today",
@@ -20,29 +17,19 @@ const groups: { title?: string; links: { href: string; label: string }[] }[] = [
     ],
   },
   {
-    title: "read & grow",
+    title: "read & play",
     links: [
       { href: "/stories", label: "Bible Stories" },
       { href: "/quiz", label: "Bible Quiz 🧩" },
       { href: "/memorize", label: "Memorize" },
-      { href: "/favorites", label: "Favorites" },
     ],
   },
   {
     title: "make & share",
-    links: [
-      { href: "/cards", label: "Verse Cards ✨" },
-      { href: "/write", label: "Write" },
-      { href: "/devotionals", label: "Devotionals" },
-    ],
+    links: [{ href: "/cards", label: "Verse Cards ✨" }],
   },
   {
-    title: "keep",
-    links: [
-      { href: "/journal", label: "Journal" },
-      { href: "/prayers", label: "Prayer List" },
-      { href: "/settings", label: "Settings" },
-    ],
+    links: [{ href: "/settings", label: "Settings" }],
   },
 ];
 

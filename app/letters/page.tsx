@@ -3,18 +3,9 @@
 import { useEffect, useState } from "react";
 import { letters, type Letter } from "@/lib/letters";
 import { loadName } from "@/lib/profile";
+import ShareButton from "@/components/ShareButton";
 
-const OPENED_KEY = "lumina.letters.opened";
-
-function loadOpened(): string[] {
-  try {
-    return JSON.parse(window.localStorage.getItem(OPENED_KEY) ?? "[]");
-  } catch {
-    return [];
-  }
-}
-
-function Envelope({ letter, opened }: { letter: Letter; opened: boolean }) {
+function Envelope({ letter }: { letter: Letter }) {
   return (
     <div
       className="envelope relative aspect-[4/3] w-full rounded-lg shadow-sm"
@@ -25,9 +16,7 @@ function Envelope({ letter, opened }: { letter: Letter; opened: boolean }) {
         style={{ background: `color-mix(in srgb, ${letter.color} 82%, #000)` }}
       />
       <span
-        className={`absolute left-1/2 top-[50%] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-lg shadow-md ${
-          opened ? "opacity-60 grayscale-[40%]" : ""
-        }`}
+        className="absolute left-1/2 top-[50%] flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-lg shadow-md"
         style={{
           background: "radial-gradient(circle at 35% 30%, #fb7185, #be123c)",
         }}
@@ -39,14 +28,15 @@ function Envelope({ letter, opened }: { letter: Letter; opened: boolean }) {
 }
 
 export default function LettersPage() {
-  const [opened, setOpened] = useState<string[]>([]);
   const [active, setActive] = useState<Letter | null>(null);
   const [phase, setPhase] = useState<"closed" | "opening" | "open">("closed");
   const [name, setName] = useState("");
 
   useEffect(() => {
-    setOpened(loadOpened());
     setName(loadName());
+    // Open a letter straight from a shared link, e.g. /letters?l=cant-sleep
+    const shared = letters.find((l) => l.id === new URLSearchParams(window.location.search).get("l"));
+    if (shared) setActive(shared);
   }, []);
 
   useEffect(() => {
@@ -62,13 +52,6 @@ export default function LettersPage() {
 
   function open(letter: Letter) {
     setActive(letter);
-    if (!opened.includes(letter.id)) {
-      const updated = [...opened, letter.id];
-      setOpened(updated);
-      try {
-        window.localStorage.setItem(OPENED_KEY, JSON.stringify(updated));
-      } catch {}
-    }
   }
 
   return (
@@ -82,7 +65,6 @@ export default function LettersPage() {
 
       <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3">
         {letters.map((letter) => {
-          const isOpened = opened.includes(letter.id);
           return (
             <li key={letter.id}>
               <button
@@ -90,12 +72,11 @@ export default function LettersPage() {
                 className="group flex w-full flex-col gap-2 text-left"
               >
                 <div className="transition-transform group-hover:-translate-y-1 group-hover:-rotate-1">
-                  <Envelope letter={letter} opened={isOpened} />
+                  <Envelope letter={letter} />
                 </div>
                 <span className="font-hand text-xl leading-tight text-ink">
                   open when {letter.when}
                 </span>
-                {isOpened && <span className="-mt-1.5 text-[11px] text-muted">opened before ✓</span>}
               </button>
             </li>
           );
@@ -111,7 +92,7 @@ export default function LettersPage() {
             <div className={`w-64 ${phase === "opening" ? "is-opening" : ""}`}>
               <div className="relative">
                 <div className="letter-peek absolute inset-x-3 top-3 h-[80%] rounded bg-[#fffdf8] shadow" />
-                <Envelope letter={active} opened={false} />
+                <Envelope letter={active} />
               </div>
             </div>
           ) : (
@@ -143,9 +124,16 @@ export default function LettersPage() {
               <p className="mt-6 text-right font-hand text-2xl">
                 with love{name ? `, for ${name}` : ""} 🌸
               </p>
+              <ShareButton
+                title={`open when ${active.when}`}
+                text={`a little letter for when ${active.when} ${active.seal}`}
+                path={`/letters?l=${active.id}`}
+                label="Send this letter"
+                className="mt-6 w-full rounded-full bg-[#2b2420] py-2.5 text-sm font-medium text-[#fffdf8] hover:opacity-90"
+              />
               <button
                 onClick={() => setActive(null)}
-                className="mt-4 w-full rounded-full border border-[#2b2420]/15 py-2 text-sm text-[#2b2420]/70 hover:text-[#2b2420]"
+                className="mt-2 w-full rounded-full border border-[#2b2420]/15 py-2 text-sm text-[#2b2420]/70 hover:text-[#2b2420]"
               >
                 fold it back up
               </button>

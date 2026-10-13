@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   people,
@@ -12,12 +12,10 @@ import {
   type Person,
   type VerseBlank,
 } from "@/lib/quiz";
-import { recordActivity } from "@/lib/activity";
+import ShareButton from "@/components/ShareButton";
 import { celebrate } from "@/lib/profile";
 
 type Mode = "quiz" | "who" | "verse";
-
-const BEST_KEY = "lumina.quiz.best";
 
 const MODES: { id: Mode; emoji: string; title: Bi; blurb: Bi; rounds: number }[] = [
   {
@@ -70,14 +68,6 @@ function BiText({ t, className = "" }: { t: Bi; className?: string }) {
       </span>
     </span>
   );
-}
-
-function loadBest(): Partial<Record<Mode, number>> {
-  try {
-    return JSON.parse(window.localStorage.getItem(BEST_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
 }
 
 // ---- Shared multiple-choice item (used by Quiz and Finish the Verse) ----
@@ -396,12 +386,7 @@ export default function QuizPage() {
   const [round, setRound] = useState(0); // bump to restart
   const [choiceItems, setChoiceItems] = useState<ChoiceItem[]>([]);
   const [whoItems, setWhoItems] = useState<WhoItem[]>([]);
-  const [result, setResult] = useState<{ score: number; max: number; best: boolean } | null>(null);
-  const [best, setBest] = useState<Partial<Record<Mode, number>>>({});
-
-  useEffect(() => {
-    setBest(loadBest());
-  }, []);
+  const [result, setResult] = useState<{ score: number; max: number } | null>(null);
 
   function start(next: Mode) {
     setMode(next);
@@ -416,17 +401,8 @@ export default function QuizPage() {
   function finish(score: number, max: number) {
     if (!mode) return;
     const percent = Math.round((score / max) * 100);
-    const isBest = percent > (best[mode] ?? -1);
-    if (isBest) {
-      const updated = { ...best, [mode]: percent };
-      setBest(updated);
-      try {
-        window.localStorage.setItem(BEST_KEY, JSON.stringify(updated));
-      } catch {}
-    }
-    recordActivity("quiz");
     if (percent >= 70) celebrate();
-    setResult({ score, max, best: isBest });
+    setResult({ score, max });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -475,12 +451,6 @@ export default function QuizPage() {
                   <BiText t={m.title} className="font-serif text-xl text-ink" />
                   <BiText t={m.blurb} className="mt-1 text-sm text-ink/70" />
                 </div>
-                {best[m.id] !== undefined && (
-                  <span className="shrink-0 text-center text-xs text-muted">
-                    best
-                    <span className="block font-serif text-lg text-accent-strong">{best[m.id]}%</span>
-                  </span>
-                )}
               </button>
             </li>
           ))}
@@ -512,7 +482,7 @@ function ResultCard({
   onAgain,
   onMenu,
 }: {
-  result: { score: number; max: number; best: boolean };
+  result: { score: number; max: number };
   onAgain: () => void;
   onMenu: () => void;
 }) {
@@ -526,11 +496,6 @@ function ResultCard({
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,var(--accent),transparent_65%)] opacity-30"
       />
       <div className="relative flex flex-col items-center gap-2">
-        {result.best && (
-          <span className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-white">
-            new best! 🏆
-          </span>
-        )}
         <p className="mt-2 font-serif text-6xl">
           {result.score}
           <span className="text-2xl text-white/50">/{result.max}</span>
@@ -538,6 +503,13 @@ function ResultCard({
         <BiText t={rank.title} className="mt-2 font-serif text-2xl" />
         <BiText t={rank.note} className="max-w-xs text-sm text-white/80" />
         <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <ShareButton
+            title="Lumina Bible Quiz"
+            text={`I got ${result.score}/${result.max} and I'm a "${rank.title.en}" on the Lumina Bible quiz! Can you beat me? 🧩`}
+            path="/quiz"
+            label="Share my score"
+            className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white hover:opacity-90"
+          />
           <button onClick={onAgain} className="rounded-full bg-[#faf8f3] px-6 py-2.5 text-sm font-medium text-[#1c1712] hover:opacity-90">
             Play again <span className="text-xs opacity-60">· main lagi</span>
           </button>

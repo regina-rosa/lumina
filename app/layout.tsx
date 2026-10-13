@@ -7,9 +7,25 @@ import Petals from "@/components/Petals";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"] });
 
+const description =
+  "Bible stories in plain words, verses for how you feel, little letters, quizzes, and pretty verse cards. Free for anyone. 🤍";
+
 export const metadata: Metadata = {
-  title: "Lumina — Bible Journal",
-  description: "Your personal Bible journaling space",
+  // Netlify sets URL to the site's primary domain at build time, so link
+  // previews follow whatever domain the site is on.
+  metadataBase: new URL(process.env.URL ?? "http://localhost:3000"),
+  title: {
+    default: "Lumina — little moments with God",
+    template: "%s — Lumina",
+  },
+  description,
+  openGraph: {
+    title: "Lumina — little moments with God",
+    description,
+    siteName: "Lumina",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 const themeScript = `(function(){try{var t=JSON.parse(localStorage.getItem('lumina.theme')||'{}');var d=document.documentElement;d.dataset.accent=t.accent||'amber';d.dataset.mode=t.mode==='dark'?'dark':'light';}catch(e){}})();`;

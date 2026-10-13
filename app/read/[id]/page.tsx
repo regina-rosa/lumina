@@ -12,10 +12,10 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const devotional = await getDevotionalById(id);
-  if (!devotional) return { title: "Devotional not found — Lumina" };
+  if (!devotional) return { title: "Devotional not found" };
   const description = devotional.body.replace(/\s+/g, " ").slice(0, 155);
   return {
-    title: `${devotional.title} — Lumina`,
+    title: `${devotional.title}`,
     description,
     openGraph: {
       title: devotional.title,
@@ -35,10 +35,10 @@ export default async function ReadArticlePage({ params }: Props) {
       <ArticleView devotional={devotional} />
       <div className="flex items-center justify-center gap-2 text-sm text-muted">
         <Link
-          href="/devotionals"
+          href="/"
           className="font-medium text-accent-strong hover:text-accent"
         >
-          ← All devotionals
+          ← Explore Lumina
         </Link>
       </div>
     </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { readingTime } from "@/lib/devotionals";
 import { getStory, stories } from "@/lib/stories";
-import { MarkReadButton } from "@/components/StoryProgress";
+import ShareButton from "@/components/ShareButton";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -16,11 +16,11 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const story = getStory(slug);
-  if (!story) return { title: "Story not found — Lumina" };
+  if (!story) return { title: "Story not found" };
   return {
-    title: `${story.title} — Lumina`,
+    title: `${story.title}`,
     description: story.summary,
-    openGraph: { title: story.title, description: story.summary, type: "article" },
+    openGraph: { title: story.title, description: story.summary, type: "article", siteName: "Lumina" },
   };
 }
 
@@ -80,7 +80,11 @@ export default async function StoryPage({ params }: Props) {
           </div>
 
           <div className="mt-8 flex border-t border-line pt-6">
-            <MarkReadButton slug={story.slug} />
+            <ShareButton
+              title={story.title}
+              text={`${story.title} (${story.verseRef}) 🤍`}
+              label="Share this story"
+            />
           </div>
         </div>
       </article>

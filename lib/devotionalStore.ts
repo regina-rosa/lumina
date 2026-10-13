@@ -27,11 +27,3 @@ export async function getDevotionalById(
 ): Promise<Devotional | null> {
   return (await store().get(id, { type: "json" })) as Devotional | null;
 }
-
-export async function putDevotional(devotional: Devotional): Promise<void> {
-  await store().setJSON(devotional.id, devotional);
-}
-
-export async function removeDevotional(id: string): Promise<void> {
-  await store().delete(id);
-}

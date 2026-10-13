@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { verseOfToday, verses, type Verse } from "@/lib/verses";
-import { loadFavorites } from "@/lib/favorites";
 import { loadName } from "@/lib/profile";
 
 type Size = "story" | "post";
@@ -217,12 +216,19 @@ export default function CardsPage() {
     const today = verseOfToday();
     const seen = new Set<string>();
     setChoices(
-      [today, ...loadFavorites(), ...verses].filter((v) =>
+      [today, ...verses].filter((v) =>
         seen.has(v.reference) ? false : (seen.add(v.reference), true),
       ),
     );
     setVerse(today);
     setName(loadName());
+    const params = new URLSearchParams(window.location.search);
+    const sharedText = params.get("text");
+    if (sharedText) {
+      setCustom(true);
+      setCustomText(sharedText);
+      setCustomRef(params.get("ref") ?? "");
+    }
     setCanShare(typeof navigator !== "undefined" && "canShare" in navigator);
   }, []);
 
