@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/components/i18n";
 
 // Opens the phone's share sheet when available, otherwise copies the link.
 export default function ShareButton({
   title,
   text,
   path,
-  label = "Share",
+  label,
   className = "",
 }: {
   title: string;
@@ -16,6 +17,7 @@ export default function ShareButton({
   label?: string;
   className?: string;
 }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
 
   async function share() {
@@ -43,7 +45,7 @@ export default function ShareButton({
         "rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
       }
     >
-      {copied ? "Link copied! ✓" : `${label} 💌`}
+      {copied ? t.share.copied : `${label ?? t.share.share} 💌`}
     </button>
   );
 }

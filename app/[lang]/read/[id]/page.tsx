@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDevotionalById } from "@/lib/devotionalStore";
 import ArticleView from "@/components/ArticleView";
+import { isLang, withLang } from "@/lib/i18n/config";
+import { ui } from "@/lib/i18n/ui";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = PageProps<"/[lang]/read/[id]">;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -26,19 +28,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ReadArticlePage({ params }: Props) {
-  const { id } = await params;
+  const { id, lang } = await params;
   const devotional = await getDevotionalById(id);
-  if (!devotional) notFound();
+  if (!devotional || !isLang(lang)) notFound();
 
   return (
     <div className="flex flex-col gap-6">
       <ArticleView devotional={devotional} />
       <div className="flex items-center justify-center gap-2 text-sm text-muted">
         <Link
-          href="/"
+          href={withLang(lang, "/")}
           className="font-medium text-accent-strong hover:text-accent"
         >
-          ← Explore Lumina
+          {ui[lang].read.back}
         </Link>
       </div>
     </div>

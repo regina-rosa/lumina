@@ -1,18 +1,38 @@
 import { ImageResponse } from "next/og";
-import { getStory, stories } from "@/lib/stories";
+import { getStory, localizeStory, stories } from "@/lib/stories";
+import { loadChineseFont } from "@/lib/og-font";
+import { LANGS, isLang, type L } from "@/lib/i18n/config";
 
 // Per-story preview card for shared links.
 export const alt = "A Bible story on Lumina";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const FOOTER: L = {
+  en: "Lumina · Bible stories in plain words",
+  id: "Lumina · cerita Alkitab dengan bahasa sederhana",
+  zh: "Lumina · 用简单的话讲圣经故事",
+};
+
 export function generateStaticParams() {
-  return stories.map((story) => ({ slug: story.slug }));
+  return LANGS.flatMap((lang) => stories.map((story) => ({ lang, slug: story.slug })));
 }
 
-export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const story = getStory(slug);
+export default async function Image({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+  const { lang: raw, slug } = await params;
+  let lang = isLang(raw) ? raw : "en";
+  const original = getStory(slug);
+  let story = original ? localizeStory(original, lang) : undefined;
+
+  // Chinese needs its own font; fall back to English if it can't be fetched.
+  let font: ArrayBuffer | null = null;
+  if (lang === "zh" && story) {
+    font = await loadChineseFont(`${story.verseRef}${story.title}${story.summary}${FOOTER.zh}`);
+    if (!font) {
+      lang = "en";
+      story = localizeStory(original!, "en");
+    }
+  }
   const color = story?.coverColor ?? "#ec4899";
 
   return new ImageResponse(
@@ -37,24 +57,27 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             borderRadius: 999,
             background: "rgba(0,0,0,0.28)",
             fontSize: 28,
-            letterSpacing: 3,
+            letterSpacing: lang === "zh" ? 1 : 3,
             textTransform: "uppercase",
           }}
         >
           {story?.verseRef ?? "Bible Stories"}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-          <div style={{ fontSize: 84, lineHeight: 1.05, letterSpacing: -2 }}>
+          <div style={{ fontSize: 84, lineHeight: 1.1, letterSpacing: lang === "zh" ? 0 : -2 }}>
             {story?.title ?? "Bible Stories"}
           </div>
           <div style={{ fontSize: 34, opacity: 0.75, maxWidth: 950 }}>{story?.summary ?? ""}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 32, opacity: 0.85 }}>
           <div style={{ width: 16, height: 16, borderRadius: 999, background: color }} />
-          Lumina · Bible stories in plain words
+          {FOOTER[lang]}
         </div>
       </div>
     ),
-    size,
+    {
+      ...size,
+      fonts: font ? [{ name: "Noto Sans SC", data: font, weight: 500, style: "normal" }] : undefined,
+    },
   );
 }

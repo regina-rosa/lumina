@@ -175,3 +175,28 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pop, .shake { animation: none; }
 }
+
+/* ---- Chinese: pinyin above characters ---- */
+ruby {
+  ruby-position: over;
+}
+rt {
+  /* System fonts cover every pinyin tone mark (ā, ǎ, ǚ…). */
+  font-family: -apple-system, "Segoe UI", "PingFang SC", "Noto Sans", Arial, sans-serif;
+  font-size: 0.45em;
+  letter-spacing: -0.02em;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+[data-pinyin="off"] rt {
+  display: none;
+}
+/* Ruby needs extra room between lines. */
+[data-lang="zh"] body {
+  line-height: 1.9;
+}
+[data-lang="zh"] .font-hand {
+  font-family: "Kaiti SC", "STKaiti", "KaiTi", var(--font-caveat), cursive;
+}

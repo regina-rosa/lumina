@@ -2,22 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { celebrate } from "@/lib/profile";
+import { Han, useT } from "@/components/i18n";
 
 const DURATIONS = [1, 3, 5, 10];
-
-// Short lines to rest on, one at a time, while the timer runs.
-const PROMPTS = [
-  "Be still, and know that I am God. — Psalm 46:10",
-  "Breathe in: You are with me. Breathe out: I am not alone.",
-  "Thank Him for one thing from today.",
-  "Come unto me, all ye that labour and are heavy laden, and I will give you rest. — Matthew 11:28",
-  "Bring Him the thing you're most worried about. Just name it.",
-  "The LORD is my shepherd; I shall not want. — Psalm 23:1",
-  "Pray for one person by name.",
-  "Speak, Lord; for thy servant heareth. — 1 Samuel 3:9",
-  "Nothing to fix right now. Just be here with Him.",
-  "My grace is sufficient for thee. — 2 Corinthians 12:9",
-];
 
 function chime() {
   try {
@@ -47,6 +34,8 @@ function format(seconds: number) {
 }
 
 export default function QuietTimePage() {
+  const t = useT();
+  const PROMPTS = t.quiet.prompts;
   const [minutes, setMinutes] = useState(3);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remaining, setRemaining] = useState(0);
@@ -84,9 +73,11 @@ export default function QuietTimePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-serif text-2xl text-ink">Quiet time</h1>
+        <h1 className="font-serif text-2xl text-ink">
+          <Han>{t.quiet.title}</Han>
+        </h1>
         <p className="mt-1 text-sm text-muted">
-          A few minutes to breathe, pray, and just be with God. No writing needed.
+          {t.quiet.intro}
         </p>
       </div>
 
@@ -111,12 +102,12 @@ export default function QuietTimePage() {
               <>
                 <p className="font-serif text-4xl tabular-nums">{format(remaining)}</p>
                 <p className="mt-1 grid text-xs uppercase tracking-[0.2em] text-accent">
-                  <span className="breathe-in [grid-area:1/1]">Breathe in</span>
-                  <span className="breathe-out [grid-area:1/1]">Breathe out</span>
+                  <span className="breathe-in [grid-area:1/1]">{t.quiet.breatheIn}</span>
+                  <span className="breathe-out [grid-area:1/1]">{t.quiet.breatheOut}</span>
                 </p>
               </>
             ) : done ? (
-              <p className="font-serif text-2xl">Amen 🤍</p>
+              <p className="font-serif text-2xl">{t.quiet.amen}</p>
             ) : (
               <p className="font-serif text-4xl tabular-nums">{format(minutes * 60)}</p>
             )}
@@ -125,10 +116,10 @@ export default function QuietTimePage() {
 
         <p className="relative min-h-[3.5rem] max-w-md text-center font-serif text-lg leading-relaxed text-[#faf8f3]/90">
           {running
-            ? PROMPTS[promptIndex]
+            ? <Han>{PROMPTS[promptIndex]}</Han>
             : done
-              ? "Well done. Carry this stillness into the rest of your day."
-              : "Find a quiet spot, put your phone face up, and press start."}
+              ? <Han>{t.quiet.done}</Han>
+              : <Han>{t.quiet.ready}</Han>}
         </p>
 
         {running ? (
@@ -136,7 +127,7 @@ export default function QuietTimePage() {
             onClick={() => setEndsAt(null)}
             className="relative rounded-full border border-white/20 px-5 py-2 text-sm text-white/80 hover:text-white"
           >
-            Stop
+            {t.quiet.stop}
           </button>
         ) : (
           <div className="relative flex flex-col items-center gap-4">
@@ -154,7 +145,7 @@ export default function QuietTimePage() {
                       : "bg-white/10 text-white/80 hover:bg-white/15"
                   }`}
                 >
-                  {d} min
+                  {d} {t.quiet.min}
                 </button>
               ))}
             </div>
@@ -162,7 +153,7 @@ export default function QuietTimePage() {
               onClick={start}
               className="rounded-full bg-[#faf8f3] px-8 py-2.5 text-sm font-medium text-[#1c1712] transition-opacity hover:opacity-90"
             >
-              {done ? "Again" : "Start"}
+              {done ? t.quiet.again : t.quiet.start}
             </button>
           </div>
         )}

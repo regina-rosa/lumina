@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { verseOfToday, type Verse } from "@/lib/verses";
+import { verseOfToday, verseRef, verseText, type Verse } from "@/lib/verses";
+import { Han, useLang, useT } from "@/components/i18n";
+import { withLang } from "@/lib/i18n/config";
 
 export default function VerseCard() {
+  const lang = useLang();
+  const t = useT();
   const [verse, setVerse] = useState<Verse | null>(null);
 
   useEffect(() => {
     setVerse(verseOfToday());
   }, []);
-
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-accent/15 bg-[#1c1712] px-6 py-8 sm:px-8 sm:py-10 text-[#faf8f3] shadow-lg">
@@ -23,25 +26,23 @@ export default function VerseCard() {
         className="pointer-events-none absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_50%_0%,var(--accent),transparent_60%)] opacity-20"
       />
       <div className="relative mb-3 flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.2em] text-accent/90">
-          Today's light
-        </p>
+        <p className="text-xs uppercase tracking-[0.2em] text-accent/90">{t.home.todaysLight}</p>
         {verse && (
           <Link
-            href="/cards"
+            href={withLang(lang, "/cards")}
             className="rounded-full bg-white/10 px-3 py-1 text-xs text-accent/90 transition-colors hover:bg-white/15 hover:text-accent"
           >
-            Make a card ✨
+            {t.home.makeCard}
           </Link>
         )}
       </div>
       {verse ? (
         <>
           <p className="relative font-serif text-xl leading-relaxed sm:text-2xl">
-            &ldquo;{verse.text}&rdquo;
+            &ldquo;<Han>{verseText(verse, lang)}</Han>&rdquo;
           </p>
           <p className="relative mt-4 text-sm text-accent/80">
-            {verse.reference}
+            {verseRef(verse, lang)}
           </p>
         </>
       ) : (

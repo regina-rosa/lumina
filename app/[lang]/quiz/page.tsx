@@ -3,69 +3,43 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  cheers,
+  modes,
+  oops,
   people,
   questions,
   rankFor,
   shuffle,
   verseBlanks,
-  type Bi,
   type Person,
   type VerseBlank,
 } from "@/lib/quiz";
-import ShareButton from "@/components/ShareButton";
 import { celebrate } from "@/lib/profile";
+import ShareButton from "@/components/ShareButton";
+import { Han, useLang, useT } from "@/components/i18n";
+import { localizeRef, withLang, type L, type Lang } from "@/lib/i18n/config";
 
 type Mode = "quiz" | "who" | "verse";
-
-const MODES: { id: Mode; emoji: string; title: Bi; blurb: Bi; rounds: number }[] = [
-  {
-    id: "quiz",
-    emoji: "🧩",
-    title: { en: "Bible Quiz", id: "Kuis Alkitab" },
-    blurb: { en: "10 multiple-choice questions from the stories.", id: "10 soal pilihan ganda dari cerita-cerita." },
-    rounds: 10,
-  },
-  {
-    id: "who",
-    emoji: "🕵️",
-    title: { en: "Who Am I?", id: "Siapakah Aku?" },
-    blurb: { en: "Guess the Bible character. Fewer clues, more points!", id: "Tebak tokoh Alkitab. Makin sedikit petunjuk, makin banyak poin!" },
-    rounds: 6,
-  },
-  {
-    id: "verse",
-    emoji: "📜",
-    title: { en: "Finish the Verse", id: "Lengkapi Ayatnya" },
-    blurb: { en: "Pick the missing word from a famous verse.", id: "Pilih kata yang hilang dari ayat terkenal." },
-    rounds: 8,
-  },
-];
-
-const CHEERS: Bi[] = [
-  { en: "Yesss! 🎉", id: "Benar!" },
-  { en: "You got it! ✨", id: "Tepat sekali!" },
-  { en: "Bible bestie behavior 💅", id: "Kelakuan sahabat Alkitab" },
-  { en: "So smart!! 🧠", id: "Pinter banget!!" },
-  { en: "Correct-a-mundo 🌸", id: "Betul sekali" },
-];
-const OOPS: Bi[] = [
-  { en: "Oops, almost! 🙈", id: "Ups, hampir!" },
-  { en: "Not quite 🤏", id: "Belum tepat" },
-  { en: "Nice try! 🫶", id: "Usaha yang bagus!" },
-];
 
 function pick<T>(list: T[]): T {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-// English on top, a small Indonesian line underneath.
-function BiText({ t, className = "" }: { t: Bi; className?: string }) {
+// The second, smaller line: Indonesian under English, English under the rest.
+function secondary(lang: Lang): Lang {
+  return lang === "en" ? "id" : "en";
+}
+
+// Main line in the reader's language, a small translation underneath.
+function Text({ t, className = "", single = false }: { t: L; className?: string; single?: boolean }) {
+  const lang = useLang();
+  const other = secondary(lang);
   return (
     <span className={`block ${className}`}>
-      {t.en}
-      <span className="mt-0.5 block text-[0.72em] font-normal leading-snug opacity-60">
-        {t.id}
-      </span>
+      <Han>{t[lang]}</Han>
+      {!single && t[other] !== t[lang] && (
+        <span className="mt-0.5 block text-[0.72em] font-normal leading-snug opacity-60">{t[other]}</span>
+      )}
     </span>
   );
 }
@@ -73,18 +47,18 @@ function BiText({ t, className = "" }: { t: Bi; className?: string }) {
 // ---- Shared multiple-choice item (used by Quiz and Finish the Verse) ----
 
 type ChoiceItem = {
-  prompt: Bi | VerseBlank;
-  options: Bi[];
+  prompt: L | VerseBlank;
+  options: L[];
   answer: number;
-  why?: Bi;
+  why?: L;
   story?: string;
 };
 
-function isVerse(prompt: Bi | VerseBlank): prompt is VerseBlank {
+function isVerse(prompt: L | VerseBlank): prompt is VerseBlank {
   return "reference" in prompt;
 }
 
-function withShuffledOptions(options: Bi[]): { options: Bi[]; answer: number } {
+function withShuffledOptions(options: L[]): { options: L[]; answer: number } {
   const order = shuffle(options.map((_, i) => i));
   return { options: order.map((i) => options[i]), answer: order.indexOf(0) };
 }
@@ -108,13 +82,7 @@ function ProgressDots({ total, current, results }: { total: number; current: num
         <span
           key={i}
           className={`h-1.5 flex-1 rounded-full transition-colors ${
-            i < results.length
-              ? results[i]
-                ? "bg-emerald-500"
-                : "bg-rose-400"
-              : i === current
-                ? "bg-accent"
-                : "bg-ink/10"
+            i < results.length ? (results[i] ? "bg-emerald-500" : "bg-rose-400") : i === current ? "bg-accent" : "bg-ink/10"
           }`}
         />
       ))}
@@ -123,8 +91,7 @@ function ProgressDots({ total, current, results }: { total: number; current: num
 }
 
 function optionClass(state: "idle" | "correct" | "wrong" | "dim") {
-  const base =
-    "w-full rounded-2xl border px-4 py-3 text-left text-base font-medium transition-all";
+  const base = "w-full rounded-2xl border px-4 py-3 text-left text-base font-medium transition-all";
   switch (state) {
     case "correct":
       return `${base} border-emerald-500 bg-emerald-500/15 text-emerald-700 pop`;
@@ -137,21 +104,54 @@ function optionClass(state: "idle" | "correct" | "wrong" | "dim") {
   }
 }
 
-function ChoiceRound({
-  items,
-  onDone,
+function Feedback({
+  reaction,
+  children,
+  storyHref,
+  storyLabel,
+  last,
+  onNext,
 }: {
-  items: ChoiceItem[];
-  onDone: (score: number, max: number) => void;
+  reaction: L;
+  children?: React.ReactNode;
+  storyHref?: string;
+  storyLabel: string;
+  last: boolean;
+  onNext: () => void;
 }) {
+  const t = useT();
+  return (
+    <div className="pop flex flex-col gap-3 rounded-2xl border border-accent/25 bg-accent/[0.07] p-5">
+      <Text t={reaction} single className="font-hand text-2xl leading-tight text-accent-strong" />
+      {children}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+        {storyHref ? (
+          <Link href={storyHref} className="text-sm font-medium text-accent-strong hover:text-accent">
+            {storyLabel}
+          </Link>
+        ) : (
+          <span />
+        )}
+        <button onClick={onNext} className="rounded-full bg-accent px-6 py-2 text-sm font-medium text-white hover:opacity-90">
+          {last ? t.quiz.results : t.quiz.next}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ChoiceRound({ items, onDone }: { items: ChoiceItem[]; onDone: (score: number, max: number) => void }) {
+  const lang = useLang();
+  const t = useT();
   const [index, setIndex] = useState(0);
   const [chosen, setChosen] = useState<number | null>(null);
   const [results, setResults] = useState<boolean[]>([]);
   const [combo, setCombo] = useState(0);
-  const [reaction, setReaction] = useState<Bi | null>(null);
+  const [reaction, setReaction] = useState<L | null>(null);
 
   const item = items[index];
   const answered = chosen !== null;
+  const verseMode = isVerse(item.prompt);
 
   function choose(i: number) {
     if (answered) return;
@@ -159,14 +159,11 @@ function ChoiceRound({
     setChosen(i);
     setResults((r) => [...r, correct]);
     setCombo((c) => (correct ? c + 1 : 0));
-    setReaction(correct ? pick(CHEERS) : pick(OOPS));
+    setReaction(correct ? pick(cheers) : pick(oops));
   }
 
   function next() {
-    if (index + 1 >= items.length) {
-      onDone(results.filter(Boolean).length, items.length);
-      return;
-    }
+    if (index + 1 >= items.length) return onDone(results.filter(Boolean).length, items.length);
     setIndex(index + 1);
     setChosen(null);
     setReaction(null);
@@ -178,72 +175,71 @@ function ChoiceRound({
         <span>
           {index + 1} / {items.length}
         </span>
-        {combo >= 2 && (
-          <span className="pop font-medium text-accent-strong">🔥 {combo} in a row!</span>
-        )}
+        {combo >= 2 && <span className="pop font-medium text-accent-strong">{t.quiz.inARow(combo)}</span>}
       </div>
       <ProgressDots total={items.length} current={index} results={results} />
 
       <div className="rounded-3xl border border-line bg-card p-5 sm:p-7">
         {isVerse(item.prompt) ? (
-          <>
-            <p className="text-xs uppercase tracking-[0.2em] text-accent-strong">
-              {item.prompt.reference}
-            </p>
-            <p className="mt-3 font-serif text-xl leading-relaxed text-ink sm:text-2xl">
-              &ldquo;{item.prompt.before}{" "}
-              <span className={`inline-block border-b-2 border-accent text-center text-accent-strong ${answered ? "px-0.5" : "min-w-[4.5rem] px-1"}`}>
-                {answered ? item.options[item.answer].en : "?"}
-              </span>
-              {/^[,.;:!?]/.test(item.prompt.after) ? "" : " "}
-              {item.prompt.after}&rdquo;
-            </p>
-            <p className="mt-2 text-xs text-muted">Pilih kata yang hilang</p>
-          </>
+          <VersePrompt blank={item.prompt} filled={answered ? item.options[item.answer][lang] : null} />
         ) : (
-          <BiText t={item.prompt} className="font-serif text-xl leading-snug text-ink sm:text-2xl" />
+          <Text t={item.prompt} className="font-serif text-xl leading-snug text-ink sm:text-2xl" />
         )}
       </div>
 
       <div className="grid gap-2.5 sm:grid-cols-2">
         {item.options.map((option, i) => {
-          const state = !answered
-            ? "idle"
-            : i === item.answer
-              ? "correct"
-              : i === chosen
-                ? "wrong"
-                : "dim";
+          const state = !answered ? "idle" : i === item.answer ? "correct" : i === chosen ? "wrong" : "dim";
           return (
             <button key={`${index}-${i}`} onClick={() => choose(i)} className={optionClass(state)}>
-              <BiText t={option} />
+              {/* Verse options are separate per language, so no translation line. */}
+              <Text t={option} single={verseMode} />
             </button>
           );
         })}
       </div>
 
-      {answered && (
-        <div className="pop flex flex-col gap-3 rounded-2xl border border-accent/25 bg-accent/[0.07] p-5">
-          {reaction && <BiText t={reaction} className="font-hand text-2xl leading-tight text-accent-strong" />}
-          {item.why && <BiText t={item.why} className="text-sm leading-relaxed text-ink/85" />}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            {item.story ? (
-              <Link href={`/stories/${item.story}`} className="text-sm font-medium text-accent-strong hover:text-accent">
-                Read the story →
-              </Link>
-            ) : (
-              <span />
-            )}
-            <button
-              onClick={next}
-              className="rounded-full bg-accent px-6 py-2 text-sm font-medium text-white hover:opacity-90"
-            >
-              {index + 1 >= items.length ? "See results ✨" : "Next →"}
-            </button>
-          </div>
-        </div>
+      {answered && reaction && (
+        <Feedback
+          reaction={reaction}
+          storyHref={item.story ? withLang(lang, `/stories/${item.story}`) : undefined}
+          storyLabel={t.quiz.readStory}
+          last={index + 1 >= items.length}
+          onNext={next}
+        >
+          {item.why && <Text t={item.why} className="text-sm leading-relaxed text-ink/85" />}
+        </Feedback>
       )}
     </div>
+  );
+}
+
+function VersePrompt({ blank, filled }: { blank: VerseBlank; filled: string | null }) {
+  const lang = useLang();
+  const t = useT();
+  const chinese = lang === "zh";
+  const before = blank.before[lang];
+  const after = blank.after[lang];
+  // Chinese has no spaces; elsewhere skip the space before punctuation.
+  const gapBefore = chinese || !before ? "" : " ";
+  const gapAfter = chinese || /^[,.;:!?]/.test(after) ? "" : " ";
+
+  return (
+    <>
+      <p className="text-xs uppercase tracking-[0.2em] text-accent-strong">{localizeRef(blank.reference, lang)}</p>
+      <p className={`mt-3 font-serif text-xl text-ink sm:text-2xl ${chinese ? "leading-[2.2]" : "leading-relaxed"}`}>
+        &ldquo;<Han>{before}</Han>
+        {gapBefore}
+        <span
+          className={`inline-block border-b-2 border-accent text-center text-accent-strong ${filled ? "px-0.5" : "min-w-[4.5rem] px-1"}`}
+        >
+          {filled ? <Han>{filled}</Han> : "?"}
+        </span>
+        {gapAfter}
+        <Han>{after}</Han>&rdquo;
+      </p>
+      <p className="mt-2 text-xs text-muted">{t.quiz.pickMissing}</p>
+    </>
   );
 }
 
@@ -256,20 +252,19 @@ function buildWho(): WhoItem[] {
     .slice(0, 6)
     .map((person) => ({
       person,
-      options: shuffle([
-        person,
-        ...shuffle(people.filter((p) => p !== person)).slice(0, 3),
-      ]),
+      options: shuffle([person, ...shuffle(people.filter((p) => p !== person)).slice(0, 3)]),
     }));
 }
 
 function WhoRound({ items, onDone }: { items: WhoItem[]; onDone: (score: number, max: number) => void }) {
+  const lang = useLang();
+  const t = useT();
   const [index, setIndex] = useState(0);
   const [clues, setClues] = useState(1);
   const [chosen, setChosen] = useState<Person | null>(null);
   const [score, setScore] = useState(0);
   const [results, setResults] = useState<boolean[]>([]);
-  const [reaction, setReaction] = useState<Bi | null>(null);
+  const [reaction, setReaction] = useState<L | null>(null);
 
   const item = items[index];
   const answered = chosen !== null;
@@ -281,14 +276,11 @@ function WhoRound({ items, onDone }: { items: WhoItem[]; onDone: (score: number,
     setChosen(p);
     setResults((r) => [...r, correct]);
     if (correct) setScore((s) => s + points);
-    setReaction(correct ? pick(CHEERS) : pick(OOPS));
+    setReaction(correct ? pick(cheers) : pick(oops));
   }
 
   function next() {
-    if (index + 1 >= items.length) {
-      onDone(score, items.length * 3);
-      return;
-    }
+    if (index + 1 >= items.length) return onDone(score, items.length * 3);
     setIndex(index + 1);
     setClues(1);
     setChosen(null);
@@ -301,26 +293,28 @@ function WhoRound({ items, onDone }: { items: WhoItem[]; onDone: (score: number,
         <span>
           {index + 1} / {items.length}
         </span>
-        <span className="font-medium text-accent-strong">⭐ {score} pts</span>
+        <span className="font-medium text-accent-strong">{t.quiz.pts(score)}</span>
       </div>
       <ProgressDots total={items.length} current={index} results={results} />
 
       <div className="rounded-3xl border border-line bg-card p-5 sm:p-7">
         <div className="flex items-center justify-between gap-3">
-          <BiText t={{ en: "Who am I?", id: "Siapakah aku?" }} className="font-serif text-2xl text-ink" />
+          <p className="font-serif text-2xl text-ink">
+            <Han>{t.quiz.whoAmI}</Han>
+          </p>
           {!answered && (
             <span className="shrink-0 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent-strong">
-              worth {points} pt{points > 1 ? "s" : ""}
+              {t.quiz.worth(points)}
             </span>
           )}
         </div>
         <ol className="mt-4 flex flex-col gap-3">
           {item.person.clues.slice(0, answered ? 3 : clues).map((clue, i) => (
             <li key={i} className="pop flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-white">
+              <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-white">
                 {i + 1}
               </span>
-              <BiText t={clue} className="font-hand text-[1.4rem] leading-snug text-ink" />
+              <Text t={clue} className="font-hand text-[1.4rem] leading-snug text-ink" />
             </li>
           ))}
         </ol>
@@ -329,51 +323,34 @@ function WhoRound({ items, onDone }: { items: WhoItem[]; onDone: (score: number,
             onClick={() => setClues(clues + 1)}
             className="mt-4 rounded-full border border-line px-4 py-1.5 text-sm text-ink/70 hover:text-ink"
           >
-            Another clue 🔍 <span className="text-xs opacity-60">· petunjuk lagi</span>
+            {t.quiz.anotherClue}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
         {item.options.map((p) => {
-          const state = !answered
-            ? "idle"
-            : p === item.person
-              ? "correct"
-              : p === chosen
-                ? "wrong"
-                : "dim";
+          const state = !answered ? "idle" : p === item.person ? "correct" : p === chosen ? "wrong" : "dim";
           return (
             <button key={`${index}-${p.name.en}`} onClick={() => choose(p)} className={optionClass(state)}>
-              <BiText t={p.name} />
+              <Text t={p.name} />
             </button>
           );
         })}
       </div>
 
-      {answered && (
-        <div className="pop flex flex-col gap-3 rounded-2xl border border-accent/25 bg-accent/[0.07] p-5">
-          {reaction && <BiText t={reaction} className="font-hand text-2xl leading-tight text-accent-strong" />}
-          <BiText
-            t={{
-              en: `It's ${item.person.name.en}!${chosen === item.person ? ` +${points} pts` : ""}`,
-              id: `Jawabannya ${item.person.name.id}!`,
-            }}
-            className="text-sm text-ink/85"
-          />
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            {item.person.story ? (
-              <Link href={`/stories/${item.person.story}`} className="text-sm font-medium text-accent-strong hover:text-accent">
-                Read their story →
-              </Link>
-            ) : (
-              <span />
-            )}
-            <button onClick={next} className="rounded-full bg-accent px-6 py-2 text-sm font-medium text-white hover:opacity-90">
-              {index + 1 >= items.length ? "See results ✨" : "Next →"}
-            </button>
-          </div>
-        </div>
+      {answered && reaction && (
+        <Feedback
+          reaction={reaction}
+          storyHref={item.person.story ? withLang(lang, `/stories/${item.person.story}`) : undefined}
+          storyLabel={t.quiz.readTheirStory}
+          last={index + 1 >= items.length}
+          onNext={next}
+        >
+          <p className="text-sm text-ink/85">
+            <Han>{t.quiz.itsX(item.person.name[lang], chosen === item.person ? points : 0)}</Han>
+          </p>
+        </Feedback>
       )}
     </div>
   );
@@ -382,6 +359,8 @@ function WhoRound({ items, onDone }: { items: WhoItem[]; onDone: (score: number,
 // ---- Page ----
 
 export default function QuizPage() {
+  const lang = useLang();
+  const t = useT();
   const [mode, setMode] = useState<Mode | null>(null);
   const [round, setRound] = useState(0); // bump to restart
   const [choiceItems, setChoiceItems] = useState<ChoiceItem[]>([]);
@@ -399,46 +378,47 @@ export default function QuizPage() {
   }
 
   function finish(score: number, max: number) {
-    if (!mode) return;
     const percent = Math.round((score / max) * 100);
     if (percent >= 70) celebrate();
     setResult({ score, max });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const current = MODES.find((m) => m.id === mode);
+  function backToMenu() {
+    setMode(null);
+    setResult(null);
+  }
+
+  const current = modes.find((m) => m.id === mode);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl text-ink">
-            {current ? `${current.emoji} ${current.title.en}` : "bible quiz 🧩"}
-          </h1>
-          <div className="mt-1 text-sm text-muted">
             {current ? (
-              current.title.id
+              <>
+                {current.emoji} <Han>{current.title[lang]}</Han>
+              </>
             ) : (
-              <BiText t={{ en: "Games to test what you've been reading. Have fun!", id: "Permainan untuk menguji bacaanmu. Selamat bermain!" }} />
+              <Han>{t.quiz.pageTitle}</Han>
             )}
-          </div>
+          </h1>
+          <p className="mt-1 text-sm text-muted">{current ? current.title[secondary(lang)] : t.quiz.intro}</p>
         </div>
         {mode && (
           <button
-            onClick={() => {
-              setMode(null);
-              setResult(null);
-            }}
+            onClick={backToMenu}
             className="shrink-0 rounded-full border border-line px-3.5 py-1.5 text-sm text-ink/70 hover:text-ink"
           >
-            ← Games
+            {t.quiz.games}
           </button>
         )}
       </div>
 
       {!mode && (
         <ul className="flex flex-col gap-3">
-          {MODES.map((m) => (
+          {modes.map((m) => (
             <li key={m.id}>
               <button
                 onClick={() => start(m.id)}
@@ -448,8 +428,8 @@ export default function QuizPage() {
                   {m.emoji}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <BiText t={m.title} className="font-serif text-xl text-ink" />
-                  <BiText t={m.blurb} className="mt-1 text-sm text-ink/70" />
+                  <Text t={m.title} className="font-serif text-xl text-ink" />
+                  <Text t={m.blurb} className="mt-1 text-sm text-ink/70" />
                 </div>
               </button>
             </li>
@@ -457,22 +437,15 @@ export default function QuizPage() {
         </ul>
       )}
 
-      {mode && result && (
-        <ResultCard
-          result={result}
-          onAgain={() => start(mode)}
-          onMenu={() => {
-            setMode(null);
-            setResult(null);
-          }}
-        />
-      )}
+      {mode && result && <ResultCard result={result} onAgain={() => start(mode)} onMenu={backToMenu} />}
 
-      {mode && !result && (mode === "who" ? (
-        <WhoRound key={round} items={whoItems} onDone={finish} />
-      ) : (
-        <ChoiceRound key={round} items={choiceItems} onDone={finish} />
-      ))}
+      {mode &&
+        !result &&
+        (mode === "who" ? (
+          <WhoRound key={round} items={whoItems} onDone={finish} />
+        ) : (
+          <ChoiceRound key={round} items={choiceItems} onDone={finish} />
+        ))}
     </div>
   );
 }
@@ -486,6 +459,8 @@ function ResultCard({
   onAgain: () => void;
   onMenu: () => void;
 }) {
+  const lang = useLang();
+  const t = useT();
   const percent = Math.round((result.score / result.max) * 100);
   const rank = rankFor(percent);
 
@@ -500,21 +475,21 @@ function ResultCard({
           {result.score}
           <span className="text-2xl text-white/50">/{result.max}</span>
         </p>
-        <BiText t={rank.title} className="mt-2 font-serif text-2xl" />
-        <BiText t={rank.note} className="max-w-xs text-sm text-white/80" />
+        <Text t={rank.title} className="mt-2 font-serif text-2xl" />
+        <Text t={rank.note} className="max-w-xs text-sm text-white/80" />
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <ShareButton
-            title="Lumina Bible Quiz"
-            text={`I got ${result.score}/${result.max} and I'm a "${rank.title.en}" on the Lumina Bible quiz! Can you beat me? 🧩`}
-            path="/quiz"
-            label="Share my score"
+            title="Lumina"
+            text={t.quiz.shareText(result.score, result.max, rank.title[lang])}
+            path={withLang(lang, "/quiz")}
+            label={t.quiz.shareScore}
             className="rounded-full bg-accent px-6 py-2.5 text-sm font-medium text-white hover:opacity-90"
           />
           <button onClick={onAgain} className="rounded-full bg-[#faf8f3] px-6 py-2.5 text-sm font-medium text-[#1c1712] hover:opacity-90">
-            Play again <span className="text-xs opacity-60">· main lagi</span>
+            {t.quiz.playAgain}
           </button>
           <button onClick={onMenu} className="rounded-full border border-white/25 px-6 py-2.5 text-sm text-white/85 hover:text-white">
-            Other games <span className="text-xs opacity-60">· game lain</span>
+            {t.quiz.otherGames}
           </button>
         </div>
       </div>

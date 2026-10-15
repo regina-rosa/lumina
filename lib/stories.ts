@@ -1,9 +1,15 @@
 // Bible stories retold in plain, conversational language. Built in, so
 // there's always something new to read.
-// Quotes are KJV.
+// English quotes are KJV; Indonesian and Chinese retellings live in
+// story-data/{id,zh}-*.ts and fall back to English if a story is missing.
 
 import { oldTestamentStories } from "@/lib/story-data/old-testament";
 import { newTestamentStories } from "@/lib/story-data/new-testament";
+import { idOld } from "@/lib/story-data/id-old";
+import { idNew } from "@/lib/story-data/id-new";
+import { zhOld } from "@/lib/story-data/zh-old";
+import { zhNew } from "@/lib/story-data/zh-new";
+import { localizeRef, type Lang } from "@/lib/i18n/config";
 
 export type Story = {
   slug: string;
@@ -388,9 +394,9 @@ const allStories = [
 ];
 
 // Reading order, roughly following the Bible's storyline.
-const SECTIONS: { title: string; slugs: string[] }[] = [
+const SECTIONS: { title: "old" | "new"; slugs: string[] }[] = [
   {
-    title: "Old Testament",
+    title: "old",
     slugs: [
       "in-the-beginning",
       "where-are-you",
@@ -421,7 +427,7 @@ const SECTIONS: { title: string; slugs: string[] }[] = [
     ],
   },
   {
-    title: "New Testament",
+    title: "new",
     slugs: [
       "no-room-in-the-inn",
       "baptism-and-temptation",
@@ -455,7 +461,7 @@ function bySlug(slug: string): Story {
   return story;
 }
 
-export const storySections: { title: string; stories: Story[] }[] =
+export const storySections: { title: "old" | "new"; stories: Story[] }[] =
   SECTIONS.map((section) => ({
     title: section.title,
     stories: section.slugs.map(bySlug),
@@ -472,4 +478,28 @@ export function storyOfToday(date = new Date()): Story {
   const start = new Date(date.getFullYear(), 0, 0);
   const day = Math.floor((date.getTime() - start.getTime()) / 86_400_000);
   return stories[day % stories.length];
+}
+
+export type StoryText = { title: string; summary: string; body: string };
+
+const translations: Record<Exclude<Lang, "en">, Record<string, StoryText>> = {
+  id: { ...idOld, ...idNew },
+  zh: { ...zhOld, ...zhNew },
+};
+
+// The story in the reader's language, with the Bible reference localized too.
+export function localizeStory(story: Story, lang: Lang): Story {
+  const text = lang === "en" ? undefined : translations[lang][story.slug];
+  return {
+    ...story,
+    ...(text ?? {}),
+    verseRef: localizeRef(story.verseRef, lang),
+  };
+}
+
+// ~200 English/Indonesian words or ~400 Chinese characters per minute.
+export function readingMinutes(body: string): number {
+  const han = (body.match(/\p{Script=Han}/gu) ?? []).length;
+  const units = han > 50 ? han / 400 : body.trim().split(/\s+/).length / 200;
+  return Math.max(1, Math.round(units));
 }

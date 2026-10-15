@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { verseOfToday, verses, type Verse } from "@/lib/verses";
+import { verseOfToday, verseRef, verseText, verses, type Verse } from "@/lib/verses";
+import { Han, useLang, useT } from "@/components/i18n";
 import { loadName } from "@/lib/profile";
 
 type Size = "story" | "post";
@@ -17,9 +18,9 @@ type Template = {
   decorate: (ctx: CanvasRenderingContext2D, w: number, h: number, rand: () => number) => void;
 };
 
-const SIZES: Record<Size, { w: number; h: number; label: string }> = {
-  story: { w: 1080, h: 1920, label: "Story 9:16" },
-  post: { w: 1080, h: 1350, label: "Post 4:5" },
+const SIZES: Record<Size, { w: number; h: number }> = {
+  story: { w: 1080, h: 1920 },
+  post: { w: 1080, h: 1350 },
 };
 
 function seeded(seed: number) {
@@ -181,7 +182,10 @@ const TEMPLATES: Template[] = [
   },
 ];
 
+const hasHan = (text: string) => /\p{Script=Han}/u.test(text);
+
 function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  if (hasHan(text)) return wrapChars(ctx, text, maxWidth);
   const words = text.split(/\s+/);
   const lines: string[] = [];
   let line = "";
@@ -198,7 +202,26 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): st
   return lines;
 }
 
+// Chinese wraps per character; punctuation never starts a new line.
+function wrapChars(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const lines: string[] = [];
+  let line = "";
+  for (const ch of Array.from(text)) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line && !/[，。、；：！？”’）》,.!?]/.test(ch)) {
+      lines.push(line);
+      line = ch;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 export default function CardsPage() {
+  const lang = useLang();
+  const t = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handRef = useRef<HTMLSpanElement>(null);
   const [choices, setChoices] = useState<Verse[]>([]);
@@ -232,8 +255,8 @@ export default function CardsPage() {
     setCanShare(typeof navigator !== "undefined" && "canShare" in navigator);
   }, []);
 
-  const text = custom ? customText : verse?.text ?? "";
-  const reference = custom ? customRef : verse?.reference ?? "";
+  const text = custom ? customText : verse ? verseText(verse, lang) : "";
+  const reference = custom ? customRef : verse ? verseRef(verse, lang) : "";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -242,7 +265,9 @@ export default function CardsPage() {
     const handFamily = handRef.current
       ? getComputedStyle(handRef.current).fontFamily
       : "cursive";
-    const serif = "Georgia, 'Times New Roman', serif";
+    const chinese = hasHan(text);
+    const serif = "Georgia, 'Times New Roman', 'Songti SC', 'STSong', 'Noto Serif SC', 'SimSun', serif";
+    const hand = chinese ? `'Kaiti SC', 'STKaiti', 'KaiTi', ${handFamily}` : handFamily;
 
     (async () => {
       try {
@@ -261,7 +286,7 @@ export default function CardsPage() {
       template.decorate(ctx, w, h, seeded(reference.length * 97 + 13));
 
       // Fit the verse into the middle of the card, shrinking until it fits.
-      const family = lettering === "hand" ? handFamily : serif;
+      const family = lettering === "hand" ? hand : serif;
       const maxWidth = w - 260;
       const maxHeight = h * (size === "story" ? 0.5 : 0.52);
       let fontSize = lettering === "hand" ? 104 : 84;
@@ -269,7 +294,7 @@ export default function CardsPage() {
       let lineHeight = 0;
       const quoted = `“${text.trim()}”`;
       while (fontSize > 28) {
-        ctx.font = `${lettering === "serif" ? "italic " : ""}${fontSize}px ${family}`;
+        ctx.font = `${lettering === "serif" && !chinese ? "italic " : ""}${fontSize}px ${family}`;
         lines = wrap(ctx, quoted, maxWidth);
         lineHeight = fontSize * (lettering === "hand" ? 1.2 : 1.42);
         if (lines.length * lineHeight <= maxHeight) break;
@@ -286,7 +311,8 @@ export default function CardsPage() {
       if (reference.trim()) {
         ctx.font = `600 38px ${serif}`;
         ctx.fillStyle = template.soft;
-        ctx.fillText(reference.trim().toUpperCase().split("").join(" "), w / 2, top + blockHeight + 48);
+        const ref = hasHan(reference) ? reference.trim() : reference.trim().toUpperCase().split("").join(" ");
+        ctx.fillText(ref, w / 2, top + blockHeight + 48);
       }
 
       ctx.font = `88px ${handFamily}`;
@@ -340,9 +366,11 @@ export default function CardsPage() {
     <div className="flex flex-col gap-6">
       <span ref={handRef} className="hidden font-hand" />
       <div>
-        <h1 className="font-serif text-2xl text-ink">verse cards ✨</h1>
+        <h1 className="font-serif text-2xl text-ink">
+          <Han>{t.cards.title}</Han>
+        </h1>
         <p className="mt-1 text-sm text-muted">
-          Make a pretty card for your story, your lock screen, or a friend who needs it.
+          {t.cards.intro}
         </p>
       </div>
 
@@ -357,24 +385,24 @@ export default function CardsPage() {
 
         <div className="flex flex-1 flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted">Verse</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted">{t.cards.verse}</p>
             <div className="flex gap-2">
-              <button onClick={() => setCustom(false)} className={pill(!custom)}>Pick one</button>
-              <button onClick={() => setCustom(true)} className={pill(custom)}>Write my own</button>
+              <button onClick={() => setCustom(false)} className={pill(!custom)}>{t.cards.pickOne}</button>
+              <button onClick={() => setCustom(true)} className={pill(custom)}>{t.cards.writeOwn}</button>
             </div>
             {custom ? (
               <>
                 <textarea
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
-                  placeholder="Type a verse or a little note…"
+                  placeholder={t.cards.placeholder}
                   rows={3}
                   className="resize-none rounded-lg border border-line bg-card px-4 py-2.5 text-sm text-ink outline-none placeholder:text-muted focus:border-accent/60"
                 />
                 <input
                   value={customRef}
                   onChange={(e) => setCustomRef(e.target.value)}
-                  placeholder="Reference (optional), e.g. Psalm 46:10"
+                  placeholder={t.cards.refPlaceholder}
                   className="rounded-lg border border-line bg-card px-4 py-2.5 text-sm text-ink outline-none placeholder:text-muted focus:border-accent/60"
                 />
               </>
@@ -386,7 +414,7 @@ export default function CardsPage() {
               >
                 {choices.map((v, i) => (
                   <option key={v.reference} value={v.reference}>
-                    {i === 0 ? `Today: ${v.reference}` : v.reference}
+                    {i === 0 ? `${t.cards.today}: ${verseRef(v, lang)}` : verseRef(v, lang)}
                   </option>
                 ))}
               </select>
@@ -394,19 +422,19 @@ export default function CardsPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-muted">Style</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-muted">{t.cards.style}</p>
             <div className="flex flex-wrap gap-3">
-              {TEMPLATES.map((t) => (
+              {TEMPLATES.map((tpl) => (
                 <button
-                  key={t.id}
-                  onClick={() => setTemplate(t)}
+                  key={tpl.id}
+                  onClick={() => setTemplate(tpl)}
                   className="flex flex-col items-center gap-1 text-xs text-ink/70"
                 >
                   <span
-                    className={`h-12 w-12 rounded-xl border-2 ${template.id === t.id ? "border-accent" : "border-line"}`}
-                    style={{ background: `linear-gradient(160deg, ${t.bg[0]}, ${t.bg[1]})` }}
+                    className={`h-12 w-12 rounded-xl border-2 ${template.id === tpl.id ? "border-accent" : "border-line"}`}
+                    style={{ background: `linear-gradient(160deg, ${tpl.bg[0]}, ${tpl.bg[1]})` }}
                   />
-                  {t.label}
+                  {t.cards.templates[tpl.id as keyof typeof t.cards.templates]}
                 </button>
               ))}
             </div>
@@ -414,22 +442,22 @@ export default function CardsPage() {
 
           <div className="flex flex-wrap gap-x-6 gap-y-4">
             <div className="flex flex-col gap-2">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted">Lettering</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted">{t.cards.lettering}</p>
               <div className="flex gap-2">
                 <button onClick={() => setLettering("serif")} className={pill(lettering === "serif")}>
-                  <span className="font-serif italic">Classic</span>
+                  <span className="font-serif italic">{t.cards.classic}</span>
                 </button>
                 <button onClick={() => setLettering("hand")} className={pill(lettering === "hand")}>
-                  <span className="font-hand text-lg leading-none">Handwritten</span>
+                  <span className="font-hand text-lg leading-none">{t.cards.handwritten}</span>
                 </button>
               </div>
             </div>
             <div className="flex flex-col gap-2">
-              <p className="text-xs uppercase tracking-[0.2em] text-muted">Size</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted">{t.cards.size}</p>
               <div className="flex gap-2">
                 {(Object.keys(SIZES) as Size[]).map((s) => (
                   <button key={s} onClick={() => setSize(s)} className={pill(size === s)}>
-                    {SIZES[s].label}
+                    {s === "story" ? t.cards.story : t.cards.post}
                   </button>
                 ))}
               </div>
@@ -442,7 +470,7 @@ export default function CardsPage() {
                 onClick={share}
                 className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white hover:opacity-90"
               >
-                Share 💌
+                {t.cards.share}
               </button>
             )}
             <button
@@ -451,12 +479,12 @@ export default function CardsPage() {
                 canShare ? "border border-line text-ink/80 hover:text-ink" : "bg-accent text-white hover:opacity-90"
               }`}
             >
-              Download PNG
+              {t.cards.download}
             </button>
           </div>
           {!name && (
             <p className="text-xs text-muted">
-              Tip: set your name in Settings to sign your cards.
+              {t.cards.tip}
             </p>
           )}
         </div>

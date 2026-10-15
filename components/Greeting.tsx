@@ -2,32 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { loadName } from "@/lib/profile";
+import { Han, useT } from "@/components/i18n";
+import type { UI } from "@/lib/i18n/ui";
 
-function greetingFor(hour: number): { hello: string; note: string } {
-  if (hour < 5) return { hello: "still up", note: "He never sleeps, so you can 🌙" };
-  if (hour < 11) return { hello: "good morning", note: "His mercies are brand new today ☀️" };
-  if (hour < 15) return { hello: "good afternoon", note: "take a little pause with Him 🍵" };
-  if (hour < 19) return { hello: "good evening", note: "you made it through today 🤍" };
-  return { hello: "good night", note: "lay it all down, He's got tomorrow ✨" };
+function greetingFor(hour: number, t: UI): string[] {
+  if (hour < 5) return t.greeting.late;
+  if (hour < 11) return t.greeting.morning;
+  if (hour < 15) return t.greeting.afternoon;
+  if (hour < 19) return t.greeting.evening;
+  return t.greeting.night;
 }
 
 export default function Greeting() {
-  const [text, setText] = useState<{ hello: string; note: string } | null>(null);
+  const t = useT();
+  const [hour, setHour] = useState<number | null>(null);
   const [name, setName] = useState("");
 
   useEffect(() => {
-    setText(greetingFor(new Date().getHours()));
+    setHour(new Date().getHours());
     setName(loadName());
   }, []);
+
+  const text = hour === null ? null : greetingFor(hour, t);
 
   return (
     <div>
       <h1 className="font-serif text-2xl text-ink">
-        {text ? text.hello : "welcome back"}
+        <Han>{text ? text[0] : t.greeting.welcome}</Han>
         {name && `, ${name}`} 🌸
       </h1>
       {text && (
-        <p className="font-hand text-xl leading-tight text-accent-strong">{text.note}</p>
+        <p className="font-hand text-xl leading-tight text-accent-strong">
+          <Han>{text[1]}</Han>
+        </p>
       )}
     </div>
   );

@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { loadChineseFont } from "@/lib/og-font";
+import { LANGS, isLang, type L } from "@/lib/i18n/config";
 
 // Preview card shown when a Lumina link is pasted into TikTok, WhatsApp, etc.
 export const alt = "Lumina — little moments with God";
@@ -14,7 +16,27 @@ const PETALS = [
   { x: 260, y: 90, s: 36, c: "#f9a8c4", r: 60 },
 ];
 
-export default function Image() {
+const TAGLINE: L = {
+  en: "little moments with God",
+  id: "momen kecil bersama Tuhan",
+  zh: "与神同在的小时刻",
+};
+const FEATURES: L = {
+  en: "Bible stories · verses for your heart · quizzes · verse cards",
+  id: "cerita Alkitab · ayat untuk hatimu · kuis · kartu ayat",
+  zh: "圣经故事 · 给你的心 · 圣经问答 · 经文卡片",
+};
+
+export function generateStaticParams() {
+  return LANGS.map((lang) => ({ lang }));
+}
+
+export default async function Image({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang: raw } = await params;
+  let lang = isLang(raw) ? raw : "en";
+  const font = lang === "zh" ? await loadChineseFont(`Lumina${TAGLINE.zh}${FEATURES.zh}`) : null;
+  if (lang === "zh" && !font) lang = "en";
+
   return new ImageResponse(
     (
       <div
@@ -57,14 +79,17 @@ export default function Image() {
           />
           <div style={{ fontSize: 132, fontWeight: 700, letterSpacing: -4 }}>Lumina</div>
         </div>
-        <div style={{ marginTop: 18, fontSize: 46, fontStyle: "italic", opacity: 0.9 }}>
-          little moments with God
+        <div style={{ marginTop: 18, fontSize: 46, fontStyle: lang === "zh" ? "normal" : "italic", opacity: 0.9 }}>
+          {TAGLINE[lang]}
         </div>
         <div style={{ marginTop: 34, fontSize: 28, opacity: 0.65 }}>
-          Bible stories · verses for your heart · quizzes · verse cards
+          {FEATURES[lang]}
         </div>
       </div>
     ),
-    size,
+    {
+      ...size,
+      fonts: font ? [{ name: "Noto Sans SC", data: font, weight: 500, style: "normal" }] : undefined,
+    },
   );
 }
