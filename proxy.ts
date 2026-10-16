@@ -31,5 +31,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Skip Next internals and any file with an extension (favicon, images…).
-  matcher: ["/((?!_next|.*\\..*).*)"],
+  matcher: ["/((?!_next|api|.*\\..*).*)"],
 };

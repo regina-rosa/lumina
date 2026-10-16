@@ -71,6 +71,13 @@ export default async function StoriesPage({ params }: PageProps<"/[lang]/stories
           </ul>
         </section>
       ))}
+
+      <Link
+        href={withLang(lang, "/mailbox?type=story")}
+        className="rounded-2xl border border-dashed border-accent/40 bg-accent/[0.05] p-5 text-center text-sm font-medium text-accent-strong hover:bg-accent/10"
+      >
+        {t.mailbox.requestStory}
+      </Link>
     </div>
   );
 }

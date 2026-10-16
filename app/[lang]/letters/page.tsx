@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { letters, type Letter } from "@/lib/letters";
 import { loadName } from "@/lib/profile";
 import ShareButton from "@/components/ShareButton";
@@ -94,6 +95,13 @@ export default function LettersPage() {
           );
         })}
       </ul>
+
+      <Link
+        href={withLang(lang, "/mailbox?type=letter")}
+        className="rounded-2xl border border-dashed border-accent/40 bg-accent/[0.05] p-5 text-center text-sm font-medium text-accent-strong hover:bg-accent/10"
+      >
+        {t.mailbox.requestLetter}
+      </Link>
 
       {active && (
         <div

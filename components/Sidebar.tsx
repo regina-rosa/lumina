@@ -27,7 +27,13 @@ function groups(t: UI): { title?: string; links: { href: string; label: string }
         { href: "/memorize", label: t.nav.memorize },
       ],
     },
-    { title: t.nav.makeShare, links: [{ href: "/cards", label: t.nav.cards }] },
+    {
+      title: t.nav.makeShare,
+      links: [
+        { href: "/cards", label: t.nav.cards },
+        { href: "/mailbox", label: t.mailbox.nav },
+      ],
+    },
     { links: [{ href: "/settings", label: t.nav.settings }] },
   ];
 }

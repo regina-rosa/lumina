@@ -82,6 +82,22 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </div>
       </section>
 
+      <Link
+        href={withLang(lang, "/mailbox")}
+        className="group flex items-center gap-4 rounded-2xl border border-dashed border-accent/40 bg-accent/[0.05] p-5 transition-colors hover:bg-accent/10"
+      >
+        <span aria-hidden className="text-3xl transition-transform group-hover:-rotate-12 group-hover:scale-110">
+          📮
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-serif text-lg leading-snug text-ink">
+            <Han>{t.mailbox.homeCard[0]}</Han>
+          </span>
+          <span className="block text-sm text-ink/60">{t.mailbox.homeCard[1]}</span>
+        </span>
+        <span aria-hidden className="text-accent-strong">→</span>
+      </Link>
+
       <p className="pb-2 text-center font-hand text-xl text-ink/50">{t.home.footer}</p>
     </div>
   );
